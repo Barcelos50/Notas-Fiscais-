@@ -64,136 +64,220 @@
             --danger: #f44336;
             --warning: #FF9800;
             --success: #4CAF50;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
             --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            --border-radius: 16px;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            --border-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: var(--background);
             min-height: 100vh;
             padding: 15px;
             line-height: 1.6;
+            overflow-x: hidden;
         }
         
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 0;
             box-shadow: var(--card-shadow);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
+            padding: 40px 30px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
         }
         
         .header h1 {
             font-size: 2.2rem;
             margin-bottom: 8px;
             font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         
         .header p {
             opacity: 0.9;
             font-size: 1.1rem;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            padding: 30px;
         }
         
         .feature-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
             margin-bottom: 30px;
         }
         
         .feature-card {
-            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: var(--border-radius);
             text-align: center;
             box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
         }
         
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
         
         .feature-card h3 {
             margin-bottom: 15px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+            line-height: 1.5;
         }
         
         .camera-section {
-            background: linear-gradient(135deg, var(--secondary), #1976D2);
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
         }
         
         .quick-add-section {
-            background: linear-gradient(135deg, var(--warning), #F57C00);
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
         }
         
         .stats-section {
-            background: linear-gradient(135deg, #9C27B0, #673AB7);
+            background: linear-gradient(135deg, #A8EDEA, #FED6E3);
+            color: var(--dark);
         }
         
         .btn {
-            background: white;
+            background: rgba(255,255,255,0.9);
             color: inherit;
-            padding: 15px 25px;
+            padding: 15px 30px;
             border: none;
-            border-radius: 12px;
+            border-radius: 50px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
-            margin-top: 15px;
+            margin: 8px 0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
         }
         
         .btn-danger {
-            background: var(--danger);
+            background: linear-gradient(135deg, var(--danger), #c62828);
             color: white;
         }
         
         .btn-small {
-            padding: 8px 15px;
+            padding: 10px 20px;
             font-size: 14px;
             width: auto;
-            margin: 0 5px 0 0;
+            margin: 0 5px;
         }
         
         .form-section {
-            background: #f8f9fa;
+            background: rgba(248,249,250,0.8);
             padding: 30px;
             border-radius: var(--border-radius);
             margin-bottom: 30px;
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
         }
         
         .form-section h3 {
             margin-bottom: 25px;
-            color: #333;
+            color: var(--dark);
             font-size: 1.4rem;
             display: flex;
             align-items: center;
@@ -215,8 +299,8 @@
         label {
             margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
-            font-size: 15px;
+            color: var(--dark);
+            font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -224,101 +308,60 @@
         
         input, select {
             padding: 16px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid rgba(0,0,0,0.1);
             border-radius: 12px;
             font-size: 16px;
-            background: white;
-            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.9);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
         }
         
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
+            box-shadow: 0 0 0 4px rgba(76,175,80,0.1);
             transform: translateY(-2px);
-        }
-        
-        .camera-input {
-            display: none;
-        }
-        
-        .camera-btn {
-            background: linear-gradient(135deg, var(--secondary), #1976D2);
-            color: white;
-            padding: 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 15px;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-        }
-        
-        .camera-btn:hover {
-            transform: translateY(-3px);
-        }
-        
-        .quick-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .quick-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 15px 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .quick-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: scale(1.05);
+            background: white;
         }
         
         .summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
         
         .summary-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
             padding: 25px;
             border-radius: var(--border-radius);
             text-align: center;
             box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease;
+            transition: var(--transition);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
         .summary-card:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
         
         .summary-card h3 {
             font-size: 0.9rem;
             margin-bottom: 10px;
-            opacity: 0.9;
+            opacity: 0.8;
             text-transform: uppercase;
             letter-spacing: 1px;
+            color: var(--dark);
+            font-weight: 500;
         }
         
         .summary-card .value {
             font-size: 1.8rem;
             font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .filters {
@@ -326,14 +369,10 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 25px;
-            padding: 20px;
-            background: #f8f9fa;
+            padding: 25px;
+            background: rgba(248,249,250,0.6);
             border-radius: var(--border-radius);
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
+            backdrop-filter: blur(10px);
         }
         
         .notes-list {
@@ -342,7 +381,7 @@
         
         .notes-list h3 {
             margin-bottom: 20px;
-            color: #333;
+            color: var(--dark);
             font-size: 1.4rem;
             display: flex;
             align-items: center;
@@ -350,19 +389,21 @@
         }
         
         .note-item {
-            background: white;
-            border: 1px solid #e0e0e0;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.08);
             border-radius: var(--border-radius);
             padding: 25px;
             margin-bottom: 20px;
             border-left: 5px solid var(--primary);
             box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            backdrop-filter: blur(20px);
         }
         
         .note-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            border-left-color: var(--secondary);
         }
         
         .note-header {
@@ -384,7 +425,7 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
             font-size: 0.9rem;
-            color: #666;
+            color: rgba(0,0,0,0.6);
             margin-bottom: 12px;
         }
         
@@ -393,36 +434,39 @@
             font-weight: bold;
             color: var(--secondary);
             margin-top: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .empty-state {
             text-align: center;
-            padding: 50px 20px;
-            color: #666;
-            background: #f8f9fa;
+            padding: 60px 20px;
+            color: rgba(0,0,0,0.5);
+            background: rgba(248,249,250,0.5);
             border-radius: var(--border-radius);
-            border: 2px dashed #ddd;
+            border: 2px dashed rgba(0,0,0,0.1);
         }
         
         .status-bar {
             background: linear-gradient(135deg, #00C851, #00A041);
             color: white;
-            padding: 15px 20px;
+            padding: 16px 20px;
             border-radius: var(--border-radius);
             margin-bottom: 20px;
             text-align: center;
             font-weight: 600;
             box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
         }
         
         .processing-indicator {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #ffffff;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s ease-in-out infinite;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
         }
         
         @keyframes spin {
@@ -430,29 +474,141 @@
         }
         
         .fade-in {
-            animation: fadeIn 0.5s ease-in;
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
         
         .pulse {
-            animation: pulse 2s infinite;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+        }
+        
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px 12px;
+            border: none;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        #qr-reader {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .api-status {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
         }
         
         @media (max-width: 600px) {
             .container { 
-                padding: 15px; 
-                margin: 10px;
+                margin: 5px;
+                border-radius: 15px;
             }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 { 
+                font-size: 1.8rem; 
+            }
+            .main-content {
+                padding: 20px;
+            }
+            .feature-cards { 
+                grid-template-columns: 1fr; 
+            }
+            .summary { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            .filters { 
+                grid-template-columns: 1fr; 
+            }
+            .form-grid { 
+                grid-template-columns: 1fr; 
+            }
+            .quick-buttons { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+        }
+        
+        .hidden { 
+            display: none !important; 
+        }
+        
+        /* PWA Styles */
+        @media (display-mode: standalone) {
+            body {
+                user-select: none;
+                -webkit-user-select: none;
+                padding-top: 20px;
+            }
+        }
+        
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
             .header h1 { font-size: 1.8rem; }
             .feature-cards { grid-template-columns: 1fr; }
             .summary { grid-template-columns: repeat(2, 1fr); }
@@ -487,18 +643,23 @@
 
         <!-- Feature Cards -->
         <div class="feature-cards">
-            <!-- Scanner QR REAL -->
+            <!-- Scanner QR REAL COM API -->
             <div class="feature-card camera-section">
-                <h3>📷 Scanner QR Real</h3>
-                <p>Scanner profissional que lê QR codes de verdade no iPhone</p>
+                <h3>📷 Scanner QR + API Automática</h3>
+                <p>Lê QR Code e extrai dados reais via API da Secretaria da Fazenda</p>
                 
                 <button class="btn" onclick="iniciarScannerReal()" id="scanner-btn">
-                    🔍 Iniciar Scanner
+                    🔍 Iniciar Scanner Automático
                 </button>
                 
                 <button class="btn" onclick="pararScanner()" id="stop-btn" style="background: rgba(255,255,255,0.3); display: none;">
                     ⏹️ Parar Scanner
                 </button>
+                
+                <!-- Status da API -->
+                <div id="api-status" style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 8px; font-size: 12px;">
+                    🔧 Status API: ${API_CONFIG.consumer_key === 'SEU_CONSUMER_KEY_AQUI' ? 'Não configurada' : 'Configurada'}
+                </div>
                 
                 <!-- Container do Scanner -->
                 <div id="qr-reader" style="width: 100%; margin-top: 15px; display: none;"></div>
@@ -658,6 +819,9 @@
             document.getElementById('data').valueAsDate = new Date();
             document.getElementById('filtroMes').value = new Date().toISOString().substr(0, 7);
             
+            // Verificar status da API
+            updateAPIStatus();
+            
             // Carregar dados existentes
             exibirNotas();
             atualizarResumo();
@@ -665,10 +829,23 @@
             // Configurar eventos
             document.getElementById('notaForm').addEventListener('submit', adicionarNota);
             
-            // Animação de entrada
+            // Animação de entrada suave
             document.querySelector('.container').classList.add('fade-in');
             
             updateStatus('🎉 App carregado com sucesso! Pronto para usar.');
+        }
+
+        function updateAPIStatus() {
+            const statusElement = document.getElementById('api-status');
+            const isConfigured = API_CONFIG.consumer_key !== 'SEU_CONSUMER_KEY_AQUI';
+            
+            if (isConfigured) {
+                statusElement.innerHTML = '✅ API Configurada - Extração automática ativa';
+                statusElement.style.background = 'rgba(76, 175, 80, 0.3)';
+            } else {
+                statusElement.innerHTML = '⚙️ API não configurada - Consulta manual disponível';
+                statusElement.style.background = 'rgba(255, 152, 0, 0.3)';
+            }
         }
 
         // Scanner QR REAL - Funciona no iPhone Safari
@@ -821,22 +998,309 @@
             }
         }
 
-        // Consultar dados reais da NF-e via chave de acesso
-        function consultarDadosNFe(chaveAcesso, urlConsulta, qrOriginal) {
-            console.log('Chave de acesso extraída:', chaveAcesso);
+        // CONFIGURAÇÃO DA API - SUBSTITUA PELAS SUAS CREDENCIAIS
+        const API_CONFIG = {
+            // Para testar, você precisa se cadastrar em: https://webmaniabr.com
+            consumer_key: 'SEU_CONSUMER_KEY_AQUI',
+            consumer_secret: 'SEU_CONSUMER_SECRET_AQUI',
+            access_token: 'SEU_ACCESS_TOKEN_AQUI',
+            access_token_secret: 'SEU_ACCESS_TOKEN_SECRET_AQUI',
+            url_base: 'https://webmaniabr.com/api/1/nfe/consulta/'
+        };
+
+        // Consultar dados reais da NF-e via API
+        async function consultarDadosNFe(chaveAcesso, urlConsulta, qrOriginal) {
+            console.log('Consultando chave de acesso:', chaveAcesso);
             
+            updateStatus('🔍 Consultando dados reais via API...', true);
+            
+            try {
+                // Verificar se API está configurada
+                if (API_CONFIG.consumer_key === 'SEU_CONSUMER_KEY_AQUI') {
+                    return mostrarInstrucaoAPI(chaveAcesso, urlConsulta);
+                }
+                
+                // Fazer consulta real na API
+                const dadosReais = await consultarAPIWebmania(chaveAcesso);
+                
+                if (dadosReais.success) {
+                    updateStatus('✅ Dados reais obtidos via API!');
+                    return dadosReais;
+                } else {
+                    throw new Error(dadosReais.error || 'Erro na consulta API');
+                }
+                
+            } catch (error) {
+                console.error('Erro na consulta API:', error);
+                updateStatus('❌ Erro na API, usando consulta manual...');
+                return consultarComInformacaoBasica(chaveAcesso, urlConsulta);
+            }
+        }
+
+        // Consulta real via API Webmania
+        async function consultarAPIWebmania(chaveAcesso) {
+            try {
+                const response = await fetch(API_CONFIG.url_base, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Consumer-Key': API_CONFIG.consumer_key,
+                        'X-Consumer-Secret': API_CONFIG.consumer_secret,
+                        'X-Access-Token': API_CONFIG.access_token,
+                        'X-Access-Token-Secret': API_CONFIG.access_token_secret
+                    },
+                    body: JSON.stringify({
+                        chave: chaveAcesso
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Processar resposta da API
+                return processarRespostaAPI(data, chaveAcesso);
+                
+            } catch (error) {
+                console.error('Erro na consulta Webmania:', error);
+                
+                // Se for erro de CORS, tentar via proxy
+                if (error.message.includes('CORS') || error.message.includes('fetch')) {
+                    return tentarViaProxy(chaveAcesso);
+                }
+                
+                throw error;
+            }
+        }
+
+        // Processar resposta da API
+        function processarRespostaAPI(data, chaveAcesso) {
+            console.log('Resposta da API:', data);
+            
+            let estabelecimento = 'Empresa via API';
+            let categoria = 'Outros';
+            let valor = '';
+            
+            try {
+                // Extrair dados do emitente
+                if (data.emitente) {
+                    estabelecimento = data.emitente.razao_social || 
+                                    data.emitente.nome_fantasia || 
+                                    'Estabelecimento via API';
+                }
+                
+                // Extrair valor total
+                if (data.total) {
+                    valor = parseFloat(data.total).toFixed(2);
+                } else if (data.valor_total) {
+                    valor = parseFloat(data.valor_total).toFixed(2);
+                }
+                
+                // Categorizar baseado na atividade
+                if (data.emitente && data.emitente.cnae) {
+                    categoria = categorizarPorCNAE(data.emitente.cnae);
+                } else if (estabelecimento) {
+                    categoria = categorizarPorNome(estabelecimento);
+                }
+                
+                // Mostrar sucesso com dados reais
+                const sucesso = `
+✅ DADOS EXTRAÍDOS COM SUCESSO!
+
+🏪 Estabelecimento: ${estabelecimento}
+💰 Valor: R$ ${valor}
+📂 Categoria: ${categoria}
+📄 Tipo: ${data.modelo || 'NF-e'}
+📅 Data: ${data.data_emissao || 'N/A'}
+
+🎉 Informações reais obtidas da Secretaria da Fazenda!
+                `;
+                
+                alert(sucesso);
+                
+                return {
+                    success: true,
+                    estabelecimento: estabelecimento,
+                    categoria: categoria,
+                    valor: valor,
+                    chaveAcesso: chaveAcesso,
+                    dadosCompletos: data
+                };
+                
+            } catch (error) {
+                console.error('Erro ao processar resposta:', error);
+                throw new Error('Erro ao processar dados da API');
+            }
+        }
+
+        // Tentar via proxy para contornar CORS
+        async function tentarViaProxy(chaveAcesso) {
+            try {
+                updateStatus('🔄 Tentando consulta via proxy...', true);
+                
+                // Usar serviço de proxy público (cors-anywhere ou similar)
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const targetUrl = API_CONFIG.url_base;
+                
+                const response = await fetch(proxyUrl + targetUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Consumer-Key': API_CONFIG.consumer_key,
+                        'X-Consumer-Secret': API_CONFIG.consumer_secret,
+                        'X-Access-Token': API_CONFIG.access_token,
+                        'X-Access-Token-Secret': API_CONFIG.access_token_secret,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        chave: chaveAcesso
+                    })
+                });
+
+                const data = await response.json();
+                return processarRespostaAPI(data, chaveAcesso);
+                
+            } catch (error) {
+                console.error('Erro no proxy:', error);
+                throw new Error('Falha na consulta via proxy');
+            }
+        }
+
+        // Categorizar empresa por CNAE
+        function categorizarPorCNAE(cnae) {
+            if (!cnae) return 'Outros';
+            
+            const categoriasCNAE = {
+                '4711': 'Alimentação',  // Supermercados
+                '4712': 'Alimentação',  // Minimercados
+                '4713': 'Alimentação',  // Lojas de departamento
+                '4721': 'Alimentação',  // Bebidas
+                '4771': 'Saúde',        // Farmácias
+                '4772': 'Saúde',        // Produtos farmacêuticos
+                '4731': 'Transporte',   // Combustíveis
+                '4732': 'Transporte',   // Lubrificantes
+                '4751': 'Casa',         // Eletrodomésticos
+                '4752': 'Casa',         // Materiais construção
+                '4753': 'Casa',         // Equipamentos
+                '4754': 'Casa',         // Móveis
+                '4755': 'Casa',         // Tecidos
+                '4761': 'Educação',     // Livros
+                '4762': 'Educação',     // Papelaria
+                '4781': 'Alimentação',  // Alimentação geral
+                '4782': 'Vestuário',    // Vestuário
+                '4783': 'Vestuário',    // Calçados
+                '4784': 'Saúde',        // Artigos médicos
+                '4785': 'Saúde',        // Produtos de higiene
+                '4789': 'Outros',       // Outros produtos
+                '5611': 'Alimentação',  // Restaurantes
+                '5620': 'Alimentação'   // Serviços de alimentação
+            };
+            
+            const codigo = cnae.substring(0, 4);
+            return categoriasCNAE[codigo] || 'Outros';
+        }
+
+        // Categorizar por nome do estabelecimento
+        function categorizarPorNome(nome) {
+            const nomeMinusculo = nome.toLowerCase();
+            
+            if (nomeMinusculo.includes('super') || nomeMinusculo.includes('mercado') || 
+                nomeMinusculo.includes('atacadão') || nomeMinusculo.includes('extra') ||
+                nomeMinusculo.includes('carrefour') || nomeMinusculo.includes('pão de açúcar')) {
+                return 'Alimentação';
+            }
+            
+            if (nomeMinusculo.includes('farmácia') || nomeMinusculo.includes('drogaria') ||
+                nomeMinusculo.includes('droga') || nomeMinusculo.includes('drogasil')) {
+                return 'Saúde';
+            }
+            
+            if (nomeMinusculo.includes('posto') || nomeMinusculo.includes('combustível') ||
+                nomeMinusculo.includes('shell') || nomeMinusculo.includes('petrobras') ||
+                nomeMinusculo.includes('ipiranga')) {
+                return 'Transporte';
+            }
+            
+            if (nomeMinusculo.includes('casas bahia') || nomeMinusculo.includes('magazine') ||
+                nomeMinusculo.includes('americanas') || nomeMinusculo.includes('fast shop')) {
+                return 'Casa';
+            }
+            
+            if (nomeMinusculo.includes('renner') || nomeMinusculo.includes('c&a') ||
+                nomeMinusculo.includes('zara') || nomeMinusculo.includes('riachuelo')) {
+                return 'Vestuário';
+            }
+            
+            if (nomeMinusculo.includes('mc donald') || nomeMinusculo.includes('burger') ||
+                nomeMinusculo.includes('pizza') || nomeMinusculo.includes('restaurante')) {
+                return 'Alimentação';
+            }
+            
+            return 'Outros';
+        }
+
+        // Mostrar instruções para configurar API
+        function mostrarInstrucaoAPI(chaveAcesso, urlConsulta) {
+            const instrucoes = `
+🔑 API NÃO CONFIGURADA
+
+Para extrair dados automaticamente, você precisa:
+
+1️⃣ CADASTRAR-SE:
+• Acesse: webmaniabr.com
+• Crie conta gratuita
+• Ative plano de consulta NF-e
+
+2️⃣ OBTER CREDENCIAIS:
+• Consumer Key
+• Consumer Secret  
+• Access Token
+• Access Token Secret
+
+3️⃣ CONFIGURAR NO CÓDIGO:
+• Substitua as credenciais no arquivo
+• Linhas 250-255 aproximadamente
+
+💰 CUSTO:
+• Plano básico: ~R$ 29/mês
+• Por consulta: ~R$ 0,10
+
+🆓 ALTERNATIVA GRATUITA:
+• Consulta manual no site oficial
+
+🔧 DADOS EXTRAÍDOS DA CHAVE:
+${chaveAcesso}
+
+Deseja abrir consulta manual agora?
+            `;
+            
+            const abrirManual = confirm(instrucoes);
+            
+            if (abrirManual && urlConsulta) {
+                window.open(urlConsulta, '_blank');
+                updateStatus('🌐 Consulta manual aberta. Copie os dados reais!');
+            } else {
+                updateStatus('📝 Configure a API para extração automática');
+            }
+            
+            return consultarComInformacaoBasica(chaveAcesso, urlConsulta);
+        }
+
+        // Consulta com informações básicas + assistente
+        function consultarComInformacaoBasica(chaveAcesso, urlConsulta) {
             // Decodificar informações da chave
             const uf = chaveAcesso.substring(0, 2);
             const aamm = chaveAcesso.substring(2, 6);
             const cnpj = chaveAcesso.substring(6, 20);
             const modelo = chaveAcesso.substring(20, 22);
-            const serie = chaveAcesso.substring(22, 25);
             const numero = chaveAcesso.substring(25, 34);
-            const tpEmis = chaveAcesso.substring(34, 35);
-            const codigo = chaveAcesso.substring(35, 43);
-            const dv = chaveAcesso.substring(43, 44);
             
-            // Mapear UF
             const ufs = {
                 '11': 'RO', '12': 'AC', '13': 'AM', '14': 'RR', '15': 'PA', 
                 '16': 'AP', '17': 'TO', '21': 'MA', '22': 'PI', '23': 'CE', 
@@ -848,46 +1312,51 @@
             
             const estado = ufs[uf] || 'BR';
             const tipoNF = modelo === '55' ? 'NF-e' : modelo === '65' ? 'NFC-e' : 'NF';
-            const ano = '20' + aamm.substring(0, 2);
-            const mes = aamm.substring(2, 4);
             
-            // Mostrar informações extraídas e oferecer consulta
-            const infoExtraida = `
-🔍 DADOS EXTRAÍDOS DO QR CODE:
+            // Mostrar assistente para consulta manual
+            const assistente = `
+🤖 ASSISTENTE DE CONSULTA NF-e
 
+✅ CHAVE EXTRAÍDA: ${chaveAcesso}
 📄 Tipo: ${tipoNF}
-🗺️ Estado: ${estado}
-📅 Data: ${mes}/${ano}
-🏢 CNPJ: ${cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')}
+🗺️ Estado: ${estado}  
 📋 Número: ${numero}
-📊 Série: ${serie}
 
-🔑 Chave de Acesso:
-${chaveAcesso}
+🎯 COMO OBTER DADOS REAIS:
 
-💡 PRÓXIMOS PASSOS:
-1. Use esta chave para consultar no site oficial do SEFAZ
-2. Ou copie o link de consulta abaixo
-3. Os dados reais serão mostrados no site oficial
+1️⃣ AUTOMÁTICO (recomendado):
+• Use APIs pagas: NFE.io, Webmania, Infosimples
+• Custo: R$ 0,05 a R$ 0,20 por consulta
+• Retorna: valor, produtos, estabelecimento real
 
-${urlConsulta ? '🌐 Link de Consulta:\n' + urlConsulta : ''}
+2️⃣ MANUAL (gratuito):
+• Abra a consulta oficial do SEFAZ
+• Copie os dados reais da nota
+• Volte e preencha manualmente
+
+💡 PARA IMPLEMENTAR API:
+• Contrate serviço de consulta NF-e
+• Adicione credenciais no código
+• Consulta automática funcionará
+
+🌐 CONSULTAR AGORA?
             `;
             
-            // Mostrar modal com informações
-            alert(infoExtraida);
+            const consultarOficial = confirm(assistente + '\n\nDeseja abrir a consulta oficial do SEFAZ?');
             
-            // Oferecer opção de abrir consulta oficial
-            if (urlConsulta && confirm('🌐 Deseja abrir a consulta oficial no SEFAZ?\n\n(Isso abrirá uma nova aba com os dados reais da nota fiscal)')) {
+            if (consultarOficial && urlConsulta) {
                 window.open(urlConsulta, '_blank');
+                updateStatus('🌐 Consulta oficial aberta em nova aba. Copie os dados reais!');
+            } else {
+                updateStatus('📝 Preencha os dados manualmente após consultar no SEFAZ');
             }
             
-            // Retornar dados básicos para o formulário
             return {
                 estabelecimento: `${tipoNF} ${estado} #${numero}`,
                 categoria: 'Outros',
-                valor: '', // Deixar vazio para o usuário preencher com dados reais
+                valor: '', // Deixar vazio para preenchimento manual
                 chaveAcesso: chaveAcesso,
-                urlConsulta: urlConsulta
+                consultaManual: true
             };
         }
 
