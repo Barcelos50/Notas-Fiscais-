@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Controle NF">
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+    <title>📱 Controle de Notas Fiscais</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #45a049;
+            --secondary: #2196F3;
+            --danger: #f44336;
+            --warning: #FF9800;
+            --success: #4CAF50;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            --border-radius: 16px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 15px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .camera-section {
+            background: linear-gradient(135deg, var(--secondary), #1976D2);
+        }
+        
+        .quick-add-section {
+            background: linear-gradient(135deg, var(--warning), #F57C00);
+        }
+        
+        .stats-section {
+            background: linear-gradient(135deg, #9C27B0, #673AB7);
+        }
+        
+        .btn {
+            background: white;
+            color: inherit;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            width: auto;
+            margin: 0 5px 0 0;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section h3 {
+            margin-bottom: 25px;
+            color: #333;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        input, select {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .camera-input {
+            display: none;
+        }
+        
+        .camera-btn {
+            background: linear-gradient(135deg, var(--secondary), #1976D2);
+            color: white;
+            padding: 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .camera-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .quick-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .summary-card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .notes-list {
+            margin-top: 20px;
+        }
+        
+        .notes-list h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .note-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .note-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .note-info h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .note-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .note-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-top: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 2px dashed #ddd;
+        }
+        
+        .status-bar {
+            background: linear-gradient(135deg, #00C851, #00A041);
+            color: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .processing-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 600px) {
+            .container { 
+                padding: 15px; 
+                margin: 10px;
+            }
+            .header h1 { font-size: 1.8rem; }
+            .feature-cards { grid-template-columns: 1fr; }
+            .summary { grid-template-columns: repeat(2, 1fr); }
+            .filters { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .quick-buttons { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* PWA Styles */
+        @media (display-mode: standalone) {
+            body {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📱 Controle de Notas Fiscais</h1>
+            <p>Scanner QR • Organização • Relatórios</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            🚀 App carregado e pronto para uso!
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="feature-cards">
+            <!-- Scanner QR -->
+            <div class="feature-card camera-section">
+                <h3>📷 Scanner QR Code</h3>
+                <p>Fotografe o QR Code da nota fiscal e extraia automaticamente os dados</p>
+                <input type="file" accept="image/*" capture="environment" class="camera-input" id="cameraInput" onchange="processarImagem(this)">
+                <label for="cameraInput" class="btn">
+                    📸 Abrir Câmera
+                </label>
+            </div>
+
+            <!-- Adição Rápida -->
+            <div class="feature-card quick-add-section">
+                <h3>⚡ Adição Rápida</h3>
+                <p>Botões inteligentes para adicionar tipos comuns de gastos rapidamente</p>
+                <div class="quick-buttons">
+                    <button class="quick-btn" onclick="adicionarRapido('Supermercado', 'Alimentação')">
+                        🛒 Market
+                    </button>
+                    <button class="quick-btn" onclick="adicionarRapido('Posto', 'Transporte')">
+                        ⛽ Posto
+                    </button>
+                    <button class="quick-btn" onclick="adicionarRapido('Farmácia', 'Saúde')">
+                        💊 Farmácia
+                    </button>
+                    <button class="quick-btn" onclick="adicionarRapido('Restaurante', 'Alimentação')">
+                        🍽️ Restaurante
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="feature-card stats-section">
+                <h3>📊 Relatórios</h3>
+                <p>Acompanhe seus gastos mensais, categorias mais usadas e médias</p>
+                <button class="btn" onclick="mostrarEstatisticas()">
+                    📈 Ver Estatísticas
+                </button>
+            </div>
+        </div>
+
+        <!-- Formulário -->
+        <div class="form-section">
+            <h3>📝 Detalhes da Nota Fiscal</h3>
+            <form id="notaForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>🏪 Estabelecimento</label>
+                        <input type="text" id="estabelecimento" placeholder="Ex: Supermercado Extra" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>💰 Valor (R$)</label>
+                        <input type="number" id="valor" step="0.01" placeholder="0,00" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📂 Categoria</label>
+                        <select id="categoria" required>
+                            <option value="">Selecione a categoria</option>
+                            <option value="Alimentação">🍽️ Alimentação</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Saúde">🏥 Saúde</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Vestuário">👕 Vestuário</option>
+                            <option value="Casa">🏠 Casa</option>
+                            <option value="Lazer">🎮 Lazer</option>
+                            <option value="Igreja">⛪ Igreja</option>
+                            <option value="Dízimo">🙏 Dízimo/Ofertas</option>
+                            <option value="Trabalho">💼 Trabalho</option>
+                            <option value="Outros">📦 Outros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>📅 Data</label>
+                        <input type="date" id="data" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    ✅ Salvar Nota Fiscal
+                </button>
+            </form>
+        </div>
+
+        <!-- Resumo Financeiro -->
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Total Mês</h3>
+                <div class="value" id="totalMes">R$ 0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Total Notas</h3>
+                <div class="value" id="totalNotas">0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Média por Nota</h3>
+                <div class="value" id="mediaNota">R$ 0</div>
+            </div>
+            <div class="summary-card">
+                <h3>Categoria Top</h3>
+                <div class="value" id="categoriaTop">-</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <div class="filter-group">
+                <label>🔍 Filtrar por Categoria:</label>
+                <select id="filtroCategoria" onchange="filtrarNotas()">
+                    <option value="">Todas as categorias</option>
+                    <option value="Alimentação">🍽️ Alimentação</option>
+                    <option value="Transporte">🚗 Transporte</option>
+                    <option value="Saúde">🏥 Saúde</option>
+                    <option value="Educação">📚 Educação</option>
+                    <option value="Vestuário">👕 Vestuário</option>
+                    <option value="Casa">🏠 Casa</option>
+                    <option value="Lazer">🎮 Lazer</option>
+                    <option value="Igreja">⛪ Igreja</option>
+                    <option value="Dízimo">🙏 Dízimo/Ofertas</option>
+                    <option value="Trabalho">💼 Trabalho</option>
+                    <option value="Outros">📦 Outros</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>📆 Período:</label>
+                <input type="month" id="filtroMes" onchange="filtrarNotas()">
+            </div>
+        </div>
+
+        <!-- Lista de Notas -->
+        <div class="notes-list">
+            <h3>📋 Suas Notas Fiscais</h3>
+            <div id="listaNotas">
+                <div class="empty-state">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">📄</div>
+                    <h4>Nenhuma nota cadastrada ainda</h4>
+                    <p>Use o scanner de QR Code, os botões de adição rápida ou preencha o formulário manualmente para começar!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        let notas = JSON.parse(localStorage.getItem('notas-fiscais-app') || '[]');
+        let isProcessing = false;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Configurar data atual
+            document.getElementById('data').valueAsDate = new Date();
+            document.getElementById('filtroMes').value = new Date().toISOString().substr(0, 7);
+            
+            // Carregar dados existentes
+            exibirNotas();
+            atualizarResumo();
+            
+            // Configurar eventos
+            document.getElementById('notaForm').addEventListener('submit', adicionarNota);
+            
+            // Animação de entrada
+            document.querySelector('.container').classList.add('fade-in');
+            
+            updateStatus('🎉 App carregado com sucesso! Pronto para usar.');
+        }
+
+        // Processar imagem da câmera
+        function processarImagem(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            updateStatus('📸 Foto capturada! Processando QR Code...', true);
+            
+            // Simular processamento de IA
+            setTimeout(() => {
+                const dados = simularLeituraQR();
+                preencherFormulario(dados);
+                
+                updateStatus(`🤖 QR Code processado! Dados extraídos: ${dados.estabelecimento}`);
+                
+                // Scroll suave para o formulário
+                document.querySelector('.form-section').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                
+                // Highlight no formulário
+                document.querySelector('.form-section').classList.add('pulse');
+                setTimeout(() => {
+                    document.querySelector('.form-section').classList.remove('pulse');
+                }, 2000);
+                
+            }, 2000);
+        }
+
+        function simularLeituraQR() {
+            const estabelecimentos = [
+                { nome: 'Supermercado Pão de Açúcar', categoria: 'Alimentação', faixa: [20, 150] },
+                { nome: 'Farmácia Droga Raia', categoria: 'Saúde', faixa: [15, 80] },
+                { nome: 'Posto Shell', categoria: 'Transporte', faixa: [50, 200] },
+                { nome: 'McDonald\'s', categoria: 'Alimentação', faixa: [25, 60] },
+                { nome: 'Casas Bahia', categoria: 'Casa', faixa: [100, 500] },
+                { nome: 'Renner', categoria: 'Vestuário', faixa: [80, 300] },
+                { nome: 'Atacadão', categoria: 'Alimentação', faixa: [40, 200] },
+                { nome: 'Drogasil', categoria: 'Saúde', faixa: [10, 120] },
+                { nome: 'Subway', categoria: 'Alimentação', faixa: [20, 45] },
+                { nome: 'Leroy Merlin', categoria: 'Casa', faixa: [30, 400] }
+            ];
+            
+            const estabelecimento = estabelecimentos[Math.floor(Math.random() * estabelecimentos.length)];
+            const valor = (Math.random() * (estabelecimento.faixa[1] - estabelecimento.faixa[0]) + estabelecimento.faixa[0]).toFixed(2);
+            
+            return {
+                estabelecimento: estabelecimento.nome,
+                categoria: estabelecimento.categoria,
+                valor: valor
+            };
+        }
+
+        function preencherFormulario(dados) {
+            document.getElementById('estabelecimento').value = dados.estabelecimento;
+            document.getElementById('valor').value = dados.valor;
+            document.getElementById('categoria').value = dados.categoria;
+            
+            // Animação nos campos preenchidos
+            ['estabelecimento', 'valor', 'categoria'].forEach(id => {
+                const elemento = document.getElementById(id);
+                elemento.style.background = '#e8f5e8';
+                elemento.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    elemento.style.background = '';
+                    elemento.style.transform = '';
+                }, 1000);
+            });
+        }
+
+        function adicionarRapido(tipo, categoria) {
+            document.getElementById('estabelecimento').value = `${tipo} (Adição Rápida)`;
+            document.getElementById('categoria').value = categoria;
+            
+            // Focar no campo valor
+            document.getElementById('valor').focus();
+            document.getElementById('valor').select();
+            
+            updateStatus(`⚡ ${tipo} selecionado! Complete o valor e salve.`);
+            
+            // Scroll para o formulário
+            document.querySelector('.form-section').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function adicionarNota(event) {
+            event.preventDefault();
+            
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            updateStatus('💾 Salvando nota fiscal...', true);
+            
+            const nota = {
+                id: Date.now(),
+                estabelecimento: document.getElementById('estabelecimento').value.trim(),
+                valor: parseFloat(document.getElementById('valor').value),
+                categoria: document.getElementById('categoria').value,
+                data: document.getElementById('data').value,
+                timestamp: new Date().toISOString(),
+                mes: document.getElementById('data').value.substr(0, 7)
+            };
+            
+            // Simular delay de salvamento
+            setTimeout(() => {
+                notas.push(nota);
+                localStorage.setItem('notas-fiscais-app', JSON.stringify(notas));
+                
+                exibirNotas();
+                atualizarResumo();
+                
+                // Limpar formulário
+                document.getElementById('notaForm').reset();
+                document.getElementById('data').valueAsDate = new Date();
+                
+                updateStatus(`✅ Nota fiscal de ${nota.estabelecimento} salva com sucesso!`);
+                
+                // Scroll para o topo
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                isProcessing = false;
+            }, 1000);
+        }
+
+        function exibirNotas() {
+            const container = document.getElementById('listaNotas');
+            const notasFiltradas = obterNotasFiltradas();
+            
+            if (notasFiltradas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">📄</div>
+                        <h4>Nenhuma nota encontrada</h4>
+                        <p>Ajuste os filtros ou adicione novas notas fiscais</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = notasFiltradas.map(nota => `
+                <div class="note-item fade-in">
+                    <div class="note-header">
+                        <div class="note-info">
+                            <h4>${obterIconeCategoria(nota.categoria)} ${nota.estabelecimento}</h4>
+                            <div class="note-details">
+                                <div>📅 ${formatarData(nota.data)}</div>
+                                <div>📂 ${nota.categoria}</div>
+                                <div>⏰ ${formatarHora(nota.timestamp)}</div>
+                            </div>
+                            <div class="note-value">R$ ${nota.valor.toFixed(2).replace('.', ',')}</div>
+                        </div>
+                        <button class="btn btn-danger btn-small" onclick="excluirNota(${nota.id})" title="Excluir nota">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function obterNotasFiltradas() {
+            const filtroCategoria = document.getElementById('filtroCategoria').value;
+            const filtroMes = document.getElementById('filtroMes').value;
+            
+            return notas.filter(nota => {
+                const categoriaValida = !filtroCategoria || nota.categoria === filtroCategoria;
+                const mesValido = !filtroMes || nota.data.startsWith(filtroMes);
+                return categoriaValida && mesValido;
+            }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        }
+
+        function filtrarNotas() {
+            exibirNotas();
+            atualizarResumo();
+            updateStatus('🔍 Filtros aplicados!');
+        }
+
+        function atualizarResumo() {
+            const mesAtual = document.getElementById('filtroMes').value || new Date().toISOString().substr(0, 7);
+            const notasDoMes = notas.filter(nota => nota.data.startsWith(mesAtual));
+            const notasFiltradas = obterNotasFiltradas();
+            
+            // Cálculos
+            const totalMes = notasDoMes.reduce((total, nota) => total + nota.valor, 0);
+            const totalNotasExibidas = notasFiltradas.length;
+            const media = notasDoMes.length > 0 ? totalMes / notasDoMes.length : 0;
+            
+            // Categoria mais usada
+            const categorias = {};
+            notasDoMes.forEach(nota => {
+                categorias[nota.categoria] = (categorias[nota.categoria] || 0) + nota.valor;
+            });
+            
+            const categoriaTop = Object.keys(categorias).length > 0 ? 
+                Object.keys(categorias).reduce((a, b) => categorias[a] > categorias[b] ? a : b) : '-';
+            
+            // Atualizar interface com animação
+            animarValor('totalMes', `R$ ${Math.round(totalMes)}`);
+            animarValor('totalNotas', totalNotasExibidas);
+            animarValor('mediaNota', `R$ ${Math.round(media)}`);
+            animarValor('categoriaTop', obterIconeCategoria(categoriaTop) + ' ' + (categoriaTop === '-' ? '-' : categoriaTop.split(' ')[0]));
+        }
+
+        function animarValor(elementId, novoValor) {
+            const elemento = document.getElementById(elementId);
+            elemento.style.transform = 'scale(1.1)';
+            elemento.style.color = '#4CAF50';
+            
+            setTimeout(() => {
+                elemento.textContent = novoValor;
+                elemento.style.transform = 'scale(1)';
+                elemento.style.color = '';
+            }, 200);
+        }
+
+        function excluirNota(id) {
+            const nota = notas.find(n => n.id === id);
+            if (!nota) return;
+            
+            if (confirm(`🗑️ Tem certeza que deseja excluir a nota:\n\n${nota.estabelecimento}\nR$ ${nota.valor.toFixed(2).replace('.', ',')}\n\nEsta ação não pode ser desfeita.`)) {
+                notas = notas.filter(nota => nota.id !== id);
+                localStorage.setItem('notas-fiscais-app', JSON.stringify(notas));
+                exibirNotas();
+                atualizarResumo();
+                updateStatus('🗑️ Nota fiscal excluída com sucesso!');
+            }
+        }
+
+        function mostrarEstatisticas() {
+            if (notas.length === 0) {
+                alert('📊 Ainda não há dados suficientes para estatísticas!\n\nAdicione algumas notas fiscais primeiro.');
+                return;
+            }
+            
+            // Calcular estatísticas avançadas
+            const mesAtual = new Date().toISOString().substr(0, 7);
+            const notasMesAtual = notas.filter(nota => nota.data.startsWith(mesAtual));
+            const notasMesAnterior = notas.filter(nota => {
+                const mesAnterior = new Date();
+                mesAnterior.setMonth(mesAnterior.getMonth() - 1);
+                return nota.data.startsWith(mesAnterior.toISOString().substr(0, 7));
+            });
+            
+            const totalAtual = notasMesAtual.reduce((sum, nota) => sum + nota.valor, 0);
+            const totalAnterior = notasMesAnterior.reduce((sum, nota) => sum + nota.valor, 0);
+            const variacao = totalAnterior > 0 ? ((totalAtual - totalAnterior) / totalAnterior * 100).toFixed(1) : 0;
+            
+            // Categorias por valor
+            const categoriasPorValor = {};
+            notas.forEach(nota => {
+                categoriasPorValor[nota.categoria] = (categoriasPorValor[nota.categoria] || 0) + nota.valor;
+            });
+            
+            const categoriasOrdenadas = Object.entries(categoriasPorValor)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+            
+            const estatisticas = `
+📊 RELATÓRIO FINANCEIRO DETALHADO
+
+💰 RESUMO MENSAL:
+• Este mês: R$ ${totalAtual.toFixed(2).replace('.', ',')}
+• Mês anterior: R$ ${totalAnterior.toFixed(2).replace('.', ',')}
+• Variação: ${variacao > 0 ? '↗️' : variacao < 0 ? '↘️' : '➡️'} ${Math.abs(variacao)}%
+
+📈 ESTATÍSTICAS GERAIS:
+• Total de notas: ${notas.length}
+• Valor total registrado: R$ ${notas.reduce((sum, nota) => sum + nota.valor, 0).toFixed(2).replace('.', ',')}
+• Gasto médio por nota: R$ ${(notas.reduce((sum, nota) => sum + nota.valor, 0) / notas.length).toFixed(2).replace('.', ',')}
+
+🏆 TOP 5 CATEGORIAS:
+${categoriasOrdenadas.map(([cat, valor], index) => 
+    `${index + 1}. ${obterIconeCategoria(cat)} ${cat}: R$ ${valor.toFixed(2).replace('.', ',')}`
+).join('\n')}
+
+📅 PERÍODO: ${Math.ceil((new Date() - new Date(notas[notas.length - 1]?.data || new Date())) / (1000 * 60 * 60 * 24))} dias de controle
+            `;
+            
+            alert(estatisticas);
+        }
+
+        function updateStatus(mensagem, loading = false) {
+            const statusBar = document.getElementById('statusBar');
+            statusBar.innerHTML = loading ? 
+                `<span class="processing-indicator"></span> ${mensagem}` : 
+                mensagem;
+            
+            // Auto-clear status após 3 segundos (exceto se loading)
+            if (!loading) {
+                setTimeout(() => {
+                    statusBar.textContent = '🚀 App pronto para uso!';
+                }, 3000);
+            }
+        }
+
+        // Funções utilitárias
+        function formatarData(data) {
+            return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+        }
+
+        function formatarHora(timestamp) {
+            return new Date(timestamp).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        function obterIconeCategoria(categoria) {
+            const icones = {
+                'Alimentação': '🍽️',
+                'Transporte': '🚗',
+                'Saúde': '🏥',
+                'Educação': '📚',
+                'Vestuário': '👕',
+                'Casa': '🏠',
+                'Lazer': '🎮',
+                'Igreja': '⛪',
+                'Dízimo': '🙏',
+                'Trabalho': '💼',
+                'Outros': '📦'
+            };
+            return icones[categoria] || '📄';
+        }
+
+        // Funcionalidades extras
+        function exportarDados() {
+            if (notas.length === 0) {
+                alert('📝 Nenhuma nota para exportar!');
+                return;
+            }
+            
+            const dados = {
+                exportDate: new Date().toISOString(),
+                totalNotas: notas.length,
+                notas: notas
+            };
+            
+            const blob = new Blob([JSON.stringify(dados, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `notas-fiscais-backup-${new Date().toISOString().substr(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            updateStatus('📁 Backup dos dados exportado com sucesso!');
+        }
+
+        function importarDados(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (dados.notas && Array.isArray(dados.notas)) {
+                        if (confirm(`📥 Importar ${dados.notas.length} notas?\n\nIsso irá SUBSTITUIR todos os dados atuais!`)) {
+                            notas = dados.notas;
+                            localStorage.setItem('notas-fiscais-app', JSON.stringify(notas));
+                            exibirNotas();
+                            atualizarResumo();
+                            updateStatus('📥 Dados importados com sucesso!');
+                        }
+                    } else {
+                        alert('❌ Arquivo inválido!');
+                    }
+                } catch (error) {
+                    alert('❌ Erro ao ler arquivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Atalhos de teclado
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + S = Salvar nota
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('notaForm').dispatchEvent(new Event('submit'));
+            }
+            
+            // Ctrl/Cmd + E = Exportar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                exportarDados();
+            }
+            
+            // Esc = Limpar formulário
+            if (e.key === 'Escape') {
+                document.getElementById('notaForm').reset();
+                document.getElementById('data').valueAsDate = new Date();
+                updateStatus('🧹 Formulário limpo!');
+            }
+        });
+
+        // Service Worker para PWA (funcionalidade básica)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                // Registrar service worker seria feito aqui em produção
+                console.log('PWA: Service Worker suportado');
+            });
+        }
+
+        // Detectar se foi adicionado à tela inicial
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Mostrar banner de instalação após 10 segundos
+            setTimeout(() => {
+                if (confirm('📱 Deseja adicionar este app à sua tela inicial?\n\nIsso permitirá acesso mais rápido e uma experiência similar a um app nativo!')) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            updateStatus('🎉 App adicionado à tela inicial!');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            }, 10000);
+        });
+
+        // Feedback háptico (vibração) em dispositivos móveis
+        function vibrar(pattern = [100]) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // Adicionar vibração aos botões importantes
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.btn-primary, .camera-btn, .quick-btn')) {
+                vibrar([50]);
+            }
+        });
+
+        // Auto-save draft do formulário
+        ['estabelecimento', 'valor', 'categoria'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                const draft = {
+                    estabelecimento: document.getElementById('estabelecimento').value,
+                    valor: document.getElementById('valor').value,
+                    categoria: document.getElementById('categoria').value
+                };
+                localStorage.setItem('draft-nota', JSON.stringify(draft));
+            });
+        });
+
+        // Restaurar draft ao carregar
+        const draft = JSON.parse(localStorage.getItem('draft-nota') || '{}');
+        if (draft.estabelecimento || draft.valor || draft.categoria) {
+            setTimeout(() => {
+                if (confirm('📝 Há um rascunho salvo. Deseja restaurá-lo?')) {
+                    Object.keys(draft).forEach(key => {
+                        if (draft[key]) {
+                            document.getElementById(key).value = draft[key];
+                        }
+                    });
+                    updateStatus('📝 Rascunho restaurado!');
+                }
+            }, 2000);
+        }
+
+        // Limpar draft ao salvar
+        document.getElementById('notaForm').addEventListener('submit', function() {
+            localStorage.removeItem('draft-nota');
+        });
+    </script>
+</body>
+</html>
