@@ -471,14 +471,14 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
         // Estado da aplicação
         let receipts = JSON.parse(localStorage.getItem('receipts') || '[]');
         let currentMonth = new Date();
         let activeCategory = 'all';
-        let stream = null;
+        let codeReader = null;
 
         // Categorias disponíveis
         const categories = ['Alimentação', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Compras', 'Outros'];
@@ -489,49 +489,102 @@
             updateCategoryFilter();
             renderReceipts();
             updateStats();
+            
+            // Inicializar leitor de QR Code
+            codeReader = new ZXing.BrowserQRCodeReader();
         }
 
         // Scanner de QR Code
         async function startScanner() {
             try {
                 const scannerContainer = document.getElementById('scanner-container');
-                const video = document.getElementById('video');
-                
                 scannerContainer.style.display = 'block';
                 
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
-                });
+                // Listar câmeras disponíveis
+                const videoInputDevices = await codeReader.listVideoInputDevices();
                 
-                video.srcObject = stream;
-                video.play();
+                // Preferir câmera traseira
+                const selectedDevice = videoInputDevices.find(device => 
+                    device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('traseira') ||
+                    device.label.toLowerCase().includes('environment')
+                ) || videoInputDevices[0];
                 
-                // Simular leitura de QR Code (em produção, usar biblioteca como jsQR)
-                setTimeout(() => {
-                    // Simular dados extraídos do QR Code da NFe
-                    const qrData = {
-                        establishment: 'Supermercado ABC',
-                        date: new Date().toISOString().split('T')[0],
-                        value: 150.75,
-                        accessKey: '12345678901234567890123456789012345678901234'
-                    };
+                if (!selectedDevice) {
+                    throw new Error('Nenhuma câmera encontrada');
+                }
+                
+                // Iniciar leitura
+                codeReader.decodeFromVideoDevice(selectedDevice.deviceId, 'video', (result, err) => {
+                    if (result) {
+                        // QR Code lido com sucesso
+                        console.log('QR Code detectado:', result.text);
+                        processQRCode(result.text);
+                        stopScanner();
+                    }
                     
-                    stopScanner();
-                    showReceiptModal(qrData);
-                }, 3000);
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.error('Erro na leitura:', err);
+                    }
+                });
                 
             } catch (error) {
                 console.error('Erro ao acessar câmera:', error);
                 alert('Erro ao acessar a câmera. Verifique as permissões.');
+                stopScanner();
             }
         }
 
         function stopScanner() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
+            if (codeReader) {
+                codeReader.reset();
             }
             document.getElementById('scanner-container').style.display = 'none';
+        }
+
+        // Processar dados do QR Code
+        function processQRCode(qrData) {
+            try {
+                // Padrão do QR Code de NFe
+                // Exemplo: https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx?chNFe=12345...&nVersao=100&tpAmb=1...
+                
+                let extractedData = {
+                    establishment: '',
+                    date: new Date().toISOString().split('T')[0],
+                    value: 0,
+                    accessKey: ''
+                };
+                
+                // Tentar extrair a chave de acesso
+                const chaveMatch = qrData.match(/chNFe=([0-9]{44})/);
+                if (chaveMatch) {
+                    extractedData.accessKey = chaveMatch[1];
+                }
+                
+                // Se for uma URL de NFe
+                if (qrData.includes('nfce') || qrData.includes('NFe')) {
+                    // Extrair informações da URL se possível
+                    const urlParams = new URLSearchParams(qrData.split('?')[1] || '');
+                    
+                    // Tentar extrair valor
+                    const valor = urlParams.get('vNF');
+                    if (valor) {
+                        extractedData.value = parseFloat(valor.replace(',', '.'));
+                    }
+                    
+                    alert('QR Code detectado! Complete as informações da nota fiscal.');
+                } else {
+                    // QR Code não reconhecido como NFe
+                    alert('QR Code lido, mas não parece ser uma nota fiscal. Complete as informações manualmente.');
+                }
+                
+                showReceiptModal(extractedData);
+                
+            } catch (error) {
+                console.error('Erro ao processar QR Code:', error);
+                alert('Erro ao processar QR Code. Complete as informações manualmente.');
+                showReceiptModal();
+            }
         }
 
         // Modal de nota fiscal
