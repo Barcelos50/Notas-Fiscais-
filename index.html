@@ -753,235 +753,201 @@
             }
         }
 
-        // Processar QR Code real - VERSÃO MELHORADA
+        // Processar QR Code real - EXTRAÇÃO PARA CONSULTA SEFAZ
         function processarQRReal(qrData) {
-            console.log('QR Code real detectado:', qrData);
+            console.log('QR Code detectado:', qrData);
             
-            let estabelecimento = 'Estabelecimento via QR';
-            let categoria = 'Outros';
-            let valor = '';
+            let chaveAcesso = null;
+            let urlConsulta = null;
             
             try {
-                // FORMATO 1: URL de Nota Fiscal (NF-e/NFC-e)
-                if (qrData.startsWith('http') && (qrData.includes('fazenda') || qrData.includes('sefaz') || qrData.includes('nfce') || qrData.includes('nfe'))) {
-                    
+                // EXTRAIR CHAVE DE ACESSO DA NF-e/NFC-e
+                
+                // Método 1: URL com parâmetros
+                if (qrData.startsWith('http')) {
                     const url = new URL(qrData);
                     const params = new URLSearchParams(url.search);
                     
-                    // Extrair chave da NF-e (44 dígitos)
-                    let chaveNF = null;
+                    // Procurar chave nos parâmetros da URL
                     for (let [key, value] of params) {
+                        // Chave de NF-e tem 44 dígitos
                         if (value.length === 44 && /^\d{44}$/.test(value)) {
-                            chaveNF = value;
+                            chaveAcesso = value;
+                            urlConsulta = qrData;
+                            break;
+                        }
+                        // Alguns casos a chave vem como parâmetro 'p'
+                        if (key.toLowerCase() === 'p' || key.toLowerCase() === 'chave') {
+                            chaveAcesso = value;
+                            urlConsulta = qrData;
                             break;
                         }
                     }
-                    
-                    if (chaveNF) {
-                        // Decodificar informações da chave de acesso (44 dígitos)
-                        const uf = chaveNF.substring(0, 2);
-                        const aamm = chaveNF.substring(2, 6); // Ano e mês
-                        const cnpj = chaveNF.substring(6, 20);
-                        const modelo = chaveNF.substring(20, 22);
-                        const serie = chaveNF.substring(22, 25);
-                        const numero = chaveNF.substring(25, 34);
-                        const codigo = chaveNF.substring(34, 43);
-                        const dv = chaveNF.substring(43, 44);
-                        
-                        // Mapear UF
-                        const ufs = {
-                            '11': 'RO', '12': 'AC', '13': 'AM', '14': 'RR', '15': 'PA', '16': 'AP', '17': 'TO',
-                            '21': 'MA', '22': 'PI', '23': 'CE', '24': 'RN', '25': 'PB', '26': 'PE', '27': 'AL', '28': 'SE', '29': 'BA',
-                            '31': 'MG', '32': 'ES', '33': 'RJ', '35': 'SP',
-                            '41': 'PR', '42': 'SC', '43': 'RS',
-                            '50': 'MS', '51': 'MT', '52': 'GO', '53': 'DF'
-                        };
-                        
-                        const estado = ufs[uf] || 'BR';
-                        const tipoNF = modelo === '55' ? 'NF-e' : modelo === '65' ? 'NFC-e' : 'NF';
-                        
-                        estabelecimento = `${tipoNF} ${estado} #${numero}`;
-                        categoria = 'Outros';
-                        
-                        // Tentar extrair valor do CNPJ (empresas conhecidas)
-                        const valoresComuns = {
-                            '55': [50, 300], // NF-e: valores maiores
-                            '65': [10, 150]  // NFC-e: valores menores (consumidor)
-                        };
-                        
-                        const faixa = valoresComuns[modelo] || [15, 100];
-                        valor = (Math.random() * (faixa[1] - faixa[0]) + faixa[0]).toFixed(2);
-                    }
-                    
-                // FORMATO 2: URL de consulta com parâmetros
-                } else if (qrData.startsWith('http')) {
-                    
-                    try {
-                        const url = new URL(qrData);
-                        const domain = url.hostname.toLowerCase();
-                        
-                        // Identificar tipo de estabelecimento pelo domínio
-                        if (domain.includes('fazenda') || domain.includes('sefaz')) {
-                            estabelecimento = 'Portal da Fazenda';
-                            categoria = 'Outros';
-                        } else if (domain.includes('receita')) {
-                            estabelecimento = 'Receita Federal';
-                            categoria = 'Outros';
-                        } else if (domain.includes('mercadolivre') || domain.includes('mercadolibre')) {
-                            estabelecimento = 'Mercado Livre';
-                            categoria = 'Outros';
-                        } else if (domain.includes('amazon')) {
-                            estabelecimento = 'Amazon';
-                            categoria = 'Outros';
-                        } else if (domain.includes('americanas')) {
-                            estabelecimento = 'Americanas';
-                            categoria = 'Outros';
-                        } else if (domain.includes('magazineluiza') || domain.includes('magalu')) {
-                            estabelecimento = 'Magazine Luiza';
-                            categoria = 'Outros';
-                        } else if (domain.includes('casasbahia')) {
-                            estabelecimento = 'Casas Bahia';
-                            categoria = 'Casa';
-                        } else if (domain.includes('extra')) {
-                            estabelecimento = 'Extra';
-                            categoria = 'Alimentação';
-                        } else if (domain.includes('carrefour')) {
-                            estabelecimento = 'Carrefour';
-                            categoria = 'Alimentação';
-                        } else if (domain.includes('paodeacucar') || domain.includes('paodacucar')) {
-                            estabelecimento = 'Pão de Açúcar';
-                            categoria = 'Alimentação';
-                        } else {
-                            estabelecimento = `Site: ${domain.replace('www.', '')}`;
-                            categoria = 'Outros';
-                        }
-                        
-                        // Valores baseados no tipo de loja
-                        if (categoria === 'Alimentação') {
-                            valor = (Math.random() * 180 + 25).toFixed(2);
-                        } else if (categoria === 'Casa') {
-                            valor = (Math.random() * 400 + 80).toFixed(2);
-                        } else {
-                            valor = (Math.random() * 250 + 30).toFixed(2);
-                        }
-                        
-                    } catch (e) {
-                        estabelecimento = 'Link via QR Code';
-                        valor = (Math.random() * 100 + 20).toFixed(2);
-                    }
-                    
-                // FORMATO 3: Dados estruturados (separados por |, ;, ou ,)
-                } else if (qrData.includes('|') || qrData.includes(';') || qrData.includes(',')) {
-                    
-                    const separadores = ['|', ';', ','];
-                    let partes = [];
-                    
-                    for (let sep of separadores) {
-                        if (qrData.includes(sep)) {
-                            partes = qrData.split(sep);
+                }
+                
+                // Método 2: Dados separados por | (formato comum)
+                if (!chaveAcesso && qrData.includes('|')) {
+                    const partes = qrData.split('|');
+                    for (let parte of partes) {
+                        if (parte.length === 44 && /^\d{44}$/.test(parte)) {
+                            chaveAcesso = parte;
                             break;
                         }
                     }
-                    
-                    if (partes.length >= 3) {
-                        // Tentar identificar padrões comuns
-                        let encontrouCNPJ = false;
-                        let encontrouValor = false;
-                        
-                        for (let parte of partes) {
-                            // Buscar CNPJ (14 dígitos)
-                            if (/^\d{14}$/.test(parte) && !encontrouCNPJ) {
-                                estabelecimento = `Empresa CNPJ: ${parte.substring(0, 8)}...`;
-                                encontrouCNPJ = true;
-                            }
-                            
-                            // Buscar valores monetários
-                            if (/^\d+[\.,]\d{2}$/.test(parte) && !encontrouValor) {
-                                valor = parte.replace(',', '.');
-                                encontrouValor = true;
-                            }
-                            
-                            // Buscar códigos de produto
-                            if (/^\d{13}$/.test(parte)) {
-                                // EAN-13
-                                estabelecimento = `Produto EAN: ${parte}`;
-                            }
-                        }
-                        
-                        if (!encontrouValor) {
-                            valor = (Math.random() * 120 + 15).toFixed(2);
-                        }
-                        
-                        estabelecimento = estabelecimento || 'Dados Estruturados';
-                        categoria = 'Outros';
+                }
+                
+                // Método 3: Apenas a chave (44 dígitos)
+                if (!chaveAcesso && qrData.length === 44 && /^\d{44}$/.test(qrData)) {
+                    chaveAcesso = qrData;
+                }
+                
+                // Método 4: Buscar qualquer sequência de 44 dígitos
+                if (!chaveAcesso) {
+                    const match = qrData.match(/\d{44}/);
+                    if (match) {
+                        chaveAcesso = match[0];
                     }
-                    
-                // FORMATO 4: Apenas números (código de produto, CPF, CNPJ)
-                } else if (/^\d+$/.test(qrData)) {
-                    
-                    if (qrData.length === 11) {
-                        estabelecimento = `CPF: ${qrData.substring(0, 3)}.***.**-${qrData.substring(9, 11)}`;
-                        categoria = 'Outros';
-                    } else if (qrData.length === 14) {
-                        estabelecimento = `CNPJ: ${qrData.substring(0, 8)}...`;
-                        categoria = 'Outros';
-                    } else if (qrData.length === 13) {
-                        estabelecimento = `Código EAN: ${qrData}`;
-                        categoria = 'Outros';
-                    } else if (qrData.length === 44) {
-                        // Chave de NF-e sem URL
-                        const uf = qrData.substring(0, 2);
-                        const numero = qrData.substring(25, 34);
-                        estabelecimento = `NF-e #${numero}`;
-                        categoria = 'Outros';
-                    } else {
-                        estabelecimento = `Código: ${qrData.length > 20 ? qrData.substring(0, 20) + '...' : qrData}`;
-                        categoria = 'Outros';
-                    }
-                    
-                    valor = (Math.random() * 100 + 10).toFixed(2);
-                    
-                // FORMATO 5: Texto livre
+                }
+                
+                if (chaveAcesso) {
+                    return consultarDadosNFe(chaveAcesso, urlConsulta, qrData);
                 } else {
-                    
-                    const textoLimpo = qrData.trim();
-                    
-                    // Buscar palavras-chave para categorização
-                    const textoBaixo = textoLimpo.toLowerCase();
-                    
-                    if (textoBaixo.includes('super') || textoBaixo.includes('mercado') || textoBaixo.includes('atacadão')) {
-                        categoria = 'Alimentação';
-                        valor = (Math.random() * 150 + 20).toFixed(2);
-                    } else if (textoBaixo.includes('farmácia') || textoBaixo.includes('drogaria')) {
-                        categoria = 'Saúde';
-                        valor = (Math.random() * 80 + 15).toFixed(2);
-                    } else if (textoBaixo.includes('posto') || textoBaixo.includes('combustível')) {
-                        categoria = 'Transporte';
-                        valor = (Math.random() * 200 + 50).toFixed(2);
-                    } else if (textoBaixo.includes('shopping') || textoBaixo.includes('loja')) {
-                        categoria = 'Outros';
-                        valor = (Math.random() * 180 + 30).toFixed(2);
-                    } else {
-                        categoria = 'Outros';
-                        valor = (Math.random() * 120 + 15).toFixed(2);
-                    }
-                    
-                    estabelecimento = textoLimpo.length > 40 ? 
-                        textoLimpo.substring(0, 40) + '...' : 
-                        textoLimpo;
+                    return processarQRSemChave(qrData);
                 }
                 
             } catch (error) {
                 console.error('Erro ao processar QR:', error);
-                estabelecimento = 'QR Code Processado';
-                categoria = 'Outros';
-                valor = (Math.random() * 100 + 15).toFixed(2);
+                return processarQRSemChave(qrData);
+            }
+        }
+
+        // Consultar dados reais da NF-e via chave de acesso
+        function consultarDadosNFe(chaveAcesso, urlConsulta, qrOriginal) {
+            console.log('Chave de acesso extraída:', chaveAcesso);
+            
+            // Decodificar informações da chave
+            const uf = chaveAcesso.substring(0, 2);
+            const aamm = chaveAcesso.substring(2, 6);
+            const cnpj = chaveAcesso.substring(6, 20);
+            const modelo = chaveAcesso.substring(20, 22);
+            const serie = chaveAcesso.substring(22, 25);
+            const numero = chaveAcesso.substring(25, 34);
+            const tpEmis = chaveAcesso.substring(34, 35);
+            const codigo = chaveAcesso.substring(35, 43);
+            const dv = chaveAcesso.substring(43, 44);
+            
+            // Mapear UF
+            const ufs = {
+                '11': 'RO', '12': 'AC', '13': 'AM', '14': 'RR', '15': 'PA', 
+                '16': 'AP', '17': 'TO', '21': 'MA', '22': 'PI', '23': 'CE', 
+                '24': 'RN', '25': 'PB', '26': 'PE', '27': 'AL', '28': 'SE', 
+                '29': 'BA', '31': 'MG', '32': 'ES', '33': 'RJ', '35': 'SP',
+                '41': 'PR', '42': 'SC', '43': 'RS', '50': 'MS', '51': 'MT', 
+                '52': 'GO', '53': 'DF'
+            };
+            
+            const estado = ufs[uf] || 'BR';
+            const tipoNF = modelo === '55' ? 'NF-e' : modelo === '65' ? 'NFC-e' : 'NF';
+            const ano = '20' + aamm.substring(0, 2);
+            const mes = aamm.substring(2, 4);
+            
+            // Mostrar informações extraídas e oferecer consulta
+            const infoExtraida = `
+🔍 DADOS EXTRAÍDOS DO QR CODE:
+
+📄 Tipo: ${tipoNF}
+🗺️ Estado: ${estado}
+📅 Data: ${mes}/${ano}
+🏢 CNPJ: ${cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')}
+📋 Número: ${numero}
+📊 Série: ${serie}
+
+🔑 Chave de Acesso:
+${chaveAcesso}
+
+💡 PRÓXIMOS PASSOS:
+1. Use esta chave para consultar no site oficial do SEFAZ
+2. Ou copie o link de consulta abaixo
+3. Os dados reais serão mostrados no site oficial
+
+${urlConsulta ? '🌐 Link de Consulta:\n' + urlConsulta : ''}
+            `;
+            
+            // Mostrar modal com informações
+            alert(infoExtraida);
+            
+            // Oferecer opção de abrir consulta oficial
+            if (urlConsulta && confirm('🌐 Deseja abrir a consulta oficial no SEFAZ?\n\n(Isso abrirá uma nova aba com os dados reais da nota fiscal)')) {
+                window.open(urlConsulta, '_blank');
+            }
+            
+            // Retornar dados básicos para o formulário
+            return {
+                estabelecimento: `${tipoNF} ${estado} #${numero}`,
+                categoria: 'Outros',
+                valor: '', // Deixar vazio para o usuário preencher com dados reais
+                chaveAcesso: chaveAcesso,
+                urlConsulta: urlConsulta
+            };
+        }
+
+        // Processar QR codes sem chave de NF-e
+        function processarQRSemChave(qrData) {
+            let estabelecimento = 'QR Code Lido';
+            let categoria = 'Outros';
+            let valor = '';
+            
+            // Mostrar conteúdo do QR Code para análise manual
+            const conteudo = `
+📱 CONTEÚDO DO QR CODE:
+
+${qrData}
+
+💡 COMO PROCEDER:
+1. Este QR Code não contém uma chave de NF-e padrão
+2. Verifique se é realmente de uma nota fiscal
+3. Se for, use o app Câmera do iPhone para abrir o link
+4. Ou preencha os dados manualmente abaixo
+
+❓ POSSÍVEIS TIPOS:
+• Link de site/loja
+• Código de produto
+• Informações de contato
+• Outro tipo de dados
+            `;
+            
+            alert(conteudo);
+            
+            // Tentar categorizar baseado no conteúdo
+            const texto = qrData.toLowerCase();
+            
+            if (texto.includes('super') || texto.includes('mercado')) {
+                estabelecimento = 'Supermercado (via QR)';
+                categoria = 'Alimentação';
+            } else if (texto.includes('farmacia') || texto.includes('drogaria')) {
+                estabelecimento = 'Farmácia (via QR)';
+                categoria = 'Saúde';
+            } else if (texto.includes('posto') || texto.includes('combustivel')) {
+                estabelecimento = 'Posto (via QR)';
+                categoria = 'Transporte';
+            } else if (qrData.startsWith('http')) {
+                try {
+                    const domain = new URL(qrData).hostname;
+                    estabelecimento = `Site: ${domain.replace('www.', '')}`;
+                } catch (e) {
+                    estabelecimento = 'Link via QR Code';
+                }
+            } else {
+                estabelecimento = qrData.length > 30 ? 
+                    qrData.substring(0, 30) + '...' : 
+                    qrData;
             }
             
             return {
-                estabelecimento: estabelecimento || 'QR Code Lido',
-                categoria: categoria || 'Outros',
-                valor: valor || (Math.random() * 100 + 15).toFixed(2)
+                estabelecimento,
+                categoria,
+                valor: '', // Deixar vazio para preenchimento manual
+                qrContent: qrData
             };
         }
 
@@ -1010,19 +976,64 @@
         }
 
         function preencherFormulario(dados) {
-            document.getElementById('estabelecimento').value = dados.estabelecimento;
-            document.getElementById('valor').value = dados.valor;
-            document.getElementById('categoria').value = dados.categoria;
+            if (dados.estabelecimento) {
+                document.getElementById('estabelecimento').value = dados.estabelecimento;
+            }
+            if (dados.categoria) {
+                document.getElementById('categoria').value = dados.categoria;
+            }
+            if (dados.valor) {
+                document.getElementById('valor').value = dados.valor;
+            }
+            
+            // Se extraiu chave de acesso, mostrar informações extras
+            if (dados.chaveAcesso) {
+                updateStatus(`🔑 Chave extraída! Use para consulta oficial no SEFAZ`);
+                
+                // Adicionar botão para consulta rápida
+                const formSection = document.querySelector('.form-section');
+                let consultaDiv = document.getElementById('consulta-info');
+                
+                if (!consultaDiv) {
+                    consultaDiv = document.createElement('div');
+                    consultaDiv.id = 'consulta-info';
+                    consultaDiv.style.cssText = `
+                        background: linear-gradient(135deg, #2196F3, #1976D2);
+                        color: white;
+                        padding: 20px;
+                        border-radius: 12px;
+                        margin-bottom: 20px;
+                        text-align: center;
+                    `;
+                    formSection.appendChild(consultaDiv);
+                }
+                
+                consultaDiv.innerHTML = `
+                    <h4>🔍 Consulta Oficial Disponível</h4>
+                    <p>Chave extraída: ${dados.chaveAcesso}</p>
+                    ${dados.urlConsulta ? `
+                        <button type="button" onclick="window.open('${dados.urlConsulta}', '_blank')" 
+                                style="background: white; color: #2196F3; border: none; padding: 10px 20px; border-radius: 8px; margin-top: 10px; cursor: pointer;">
+                            🌐 Consultar no SEFAZ
+                        </button>
+                    ` : ''}
+                    <p style="font-size: 12px; margin-top: 10px; opacity: 0.9;">
+                        💡 Complete o valor real após consultar oficialmente
+                    </p>
+                `;
+            }
             
             // Animação nos campos preenchidos
-            ['estabelecimento', 'valor', 'categoria'].forEach(id => {
+            ['estabelecimento', 'categoria', 'valor'].forEach(id => {
                 const elemento = document.getElementById(id);
-                elemento.style.background = '#e8f5e8';
-                elemento.style.transform = 'scale(1.02)';
-                setTimeout(() => {
-                    elemento.style.background = '';
-                    elemento.style.transform = '';
-                }, 1000);
+                if (elemento.value) {
+                    elemento.style.background = '#e8f5e8';
+                    elemento.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        elemento.style.background = '';
+                        elemento.style.transform = '';
+                    }, 1000);
+                }
             });
         }
 
