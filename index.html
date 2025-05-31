@@ -1,102 +1,1104 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de QR Code - Notas</title>
-    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerenciador de Notas Fiscais</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: { primary: "#4f46e5", secondary: "#8b5cf6" },
+            borderRadius: {
+              none: "0px",
+              sm: "4px",
+              DEFAULT: "8px",
+              md: "12px",
+              lg: "16px",
+              xl: "20px",
+              "2xl": "24px",
+              "3xl": "32px",
+              full: "9999px",
+              button: "8px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
+    />
     <style>
-        body { font-family: Arial, sans-serif; margin: 10px; }
-        .categoria { margin-top: 15px; }
-        button { padding: 5px 10px; margin: 5px; }
+      :where([class^="ri-"])::before { content: "\f3c2"; }
+      body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      }
+      .custom-checkbox {
+      appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border: 2px solid #d1d5db;
+      border-radius: 4px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      }
+      .custom-checkbox:checked {
+      background-color: #4f46e5;
+      border-color: #4f46e5;
+      }
+      .custom-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 2px;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      }
+      .custom-switch {
+      position: relative;
+      display: inline-block;
+      width: 3rem;
+      height: 1.5rem;
+      }
+      .custom-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      }
+      .switch-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #e5e7eb;
+      transition: .4s;
+      border-radius: 34px;
+      }
+      .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 1.1rem;
+      width: 1.1rem;
+      left: 4px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      }
+      input:checked + .switch-slider {
+      background-color: #4f46e5;
+      }
+      input:checked + .switch-slider:before {
+      transform: translateX(1.5rem);
+      }
+      .modal {
+      transition: opacity 0.25s ease;
+      }
+      .modal-container {
+      transition: transform 0.25s ease;
+      }
+      .camera-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      }
+      .scanner-area {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 50%;
+      border: 2px solid #4f46e5;
+      border-radius: 8px;
+      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      }
+      .scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #4f46e5;
+      animation: scan 2s linear infinite;
+      }
+      @keyframes scan {
+      0% { top: 0; }
+      50% { top: 100%; }
+      100% { top: 0; }
+      }
     </style>
-</head>
-<body>
-
-<h2>Leitor de QR Code - Notas</h2>
-<div id="reader" style="width:100%;"></div>
-<button onclick="startScan()">Escanear Nota</button>
-
-<div id="notas"></div>
-<button onclick="gerarPDF()">Gerar PDF</button>
-
-<script>
-let notas = JSON.parse(localStorage.getItem('notas')) || [];
-atualizarNotas();
-
-function startScan() {
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", { fps: 10, qrbox: 250 }, false);
-
-    html5QrcodeScanner.render((qrCodeMessage) => {
-        html5QrcodeScanner.clear();
-        processarQRCode(qrCodeMessage);
-    });
-}
-
-function processarQRCode(conteudo) {
-    let categoria = prompt("Insira a categoria da nota:");
-    let valor = parseFloat(prompt("Valor da nota:"));
-
-    notas.push({ categoria: categoria, valor: valor, conteudo: conteudo });
-    localStorage.setItem('notas', JSON.stringify(notas));
-
-    atualizarNotas();
-}
-
-function atualizarNotas() {
-    let container = document.getElementById('notas');
-    container.innerHTML = '';
-
-    let categorias = {};
-
-    notas.forEach((nota, index) => {
-        categorias[nota.categoria] = categorias[nota.categoria] || [];
-        categorias[nota.categoria].push({ valor: nota.valor, index });
-    });
-
-    for (let categoria in categorias) {
-        let total = categorias[categoria].reduce((sum, nota) => sum + nota.valor, 0);
-
-        let div = document.createElement('div');
-        div.className = 'categoria';
-        div.innerHTML = `<strong>${categoria} - Total: R$ ${total.toFixed(2)}</strong>`;
-
-        categorias[categoria].forEach(nota => {
-            div.innerHTML += `<div>Nota: R$ ${nota.valor.toFixed(2)} 
-            <button onclick="excluirNota(${nota.index})">Excluir</button></div>`;
+  </head>
+  <body class="min-h-screen">
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <h1 class="text-xl font-semibold text-gray-900">
+              Gerenciador de Notas Fiscais
+            </h1>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button
+              id="filterButton"
+              class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+              title="Filtrar"
+            >
+              <i class="ri-filter-3-line ri-lg"></i>
+            </button>
+            <button
+              id="searchButton"
+              class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+              title="Buscar"
+            >
+              <i class="ri-search-line ri-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- Conteúdo principal -->
+    <main class="pt-16 pb-24">
+      <!-- Categorias -->
+      <section class="bg-white py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 class="text-lg font-medium text-gray-700 mb-3">Categorias</h2>
+          <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div
+              class="flex-shrink-0 w-32 bg-blue-50 rounded-lg p-3 border border-blue-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mb-2"
+              >
+                <i class="ri-restaurant-line ri-lg text-blue-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Alimentação</h3>
+              <p class="text-lg font-semibold text-gray-900">R$ 850,75</p>
+            </div>
+            <div
+              class="flex-shrink-0 w-32 bg-purple-50 rounded-lg p-3 border border-purple-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-full mb-2"
+              >
+                <i class="ri-car-line ri-lg text-purple-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Transporte</h3>
+              <p class="text-lg font-semibold text-gray-900">R$ 325,50</p>
+            </div>
+            <div
+              class="flex-shrink-0 w-32 bg-green-50 rounded-lg p-3 border border-green-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-green-100 rounded-full mb-2"
+              >
+                <i class="ri-medicine-bottle-line ri-lg text-green-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Saúde</h3>
+              <p class="text-lg font-semibold text-gray-900">R$ 420,30</p>
+            </div>
+            <div
+              class="flex-shrink-0 w-32 bg-yellow-50 rounded-lg p-3 border border-yellow-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-yellow-100 rounded-full mb-2"
+              >
+                <i class="ri-shopping-bag-line ri-lg text-yellow-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Compras</h3>
+              <p class="text-lg font-semibold text-gray-900">R$ 1.250,45</p>
+            </div>
+            <div
+              class="flex-shrink-0 w-32 bg-red-50 rounded-lg p-3 border border-red-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-full mb-2"
+              >
+                <i class="ri-home-line ri-lg text-red-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Moradia</h3>
+              <p class="text-lg font-semibold text-gray-900">R$ 1.800,00</p>
+            </div>
+            <div
+              class="flex-shrink-0 w-32 bg-indigo-50 rounded-lg p-3 border border-indigo-100"
+            >
+              <div
+                class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-full mb-2"
+              >
+                <i class="ri-add-line ri-lg text-indigo-600"></i>
+              </div>
+              <h3 class="text-sm font-medium text-gray-800">Adicionar</h3>
+              <p class="text-lg font-semibold text-transparent">-</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Resumo Mensal -->
+      <section class="bg-white mt-4 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-medium text-gray-700">Resumo Mensal</h2>
+            <div class="relative">
+              <select
+                id="monthSelector"
+                class="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-button focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+              >
+                <option value="5">Maio 2025</option>
+                <option value="4">Abril 2025</option>
+                <option value="3">Março 2025</option>
+                <option value="2">Fevereiro 2025</option>
+                <option value="1">Janeiro 2025</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+              >
+                <i class="ri-arrow-down-s-line"></i>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-gradient-to-r from-primary to-secondary rounded-lg p-4 text-white"
+          >
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-white text-opacity-80 text-sm">Total do mês</p>
+                <h3 class="text-2xl font-bold">R$ 4.647,00</h3>
+              </div>
+              <div class="text-right">
+                <p class="text-white text-opacity-80 text-sm">
+                  31 notas fiscais
+                </p>
+                <p class="text-sm font-medium">Maio 2025</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Lista de Notas Fiscais -->
+      <section class="mt-4 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-gray-700">Notas Fiscais</h2>
+            <div class="relative hidden" id="actionBar">
+              <div class="flex space-x-2">
+                <button
+                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
+                >
+                  <i class="ri-delete-bin-line mr-1"></i> Excluir
+                </button>
+                <button
+                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
+                >
+                  <i class="ri-share-line mr-1"></i> Compartilhar
+                </button>
+                <button
+                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
+                >
+                  <i class="ri-price-tag-3-line mr-1"></i> Recategorizar
+                </button>
+                <button
+                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
+                  id="cancelSelection"
+                >
+                  <i class="ri-close-line mr-1"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Campo de busca (inicialmente oculto) -->
+          <div id="searchBar" class="mb-4 hidden">
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+              >
+                <i class="ri-search-line text-gray-400"></i>
+              </div>
+              <input
+                type="text"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full pl-10 p-2.5 focus:ring-primary focus:border-primary"
+                placeholder="Digite para buscar notas fiscais..."
+              />
+            </div>
+          </div>
+          <!-- Filtros (inicialmente ocultos) -->
+          <div id="filterBar" class="mb-4 hidden">
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Período</label
+                >
+                <select
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Todos</option>
+                  <option>Últimos 7 dias</option>
+                  <option>Últimos 30 dias</option>
+                  <option>Este mês</option>
+                  <option>Mês passado</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Categoria</label
+                >
+                <select
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Todas</option>
+                  <option>Alimentação</option>
+                  <option>Transporte</option>
+                  <option>Saúde</option>
+                  <option>Compras</option>
+                  <option>Moradia</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Valor</label
+                >
+                <select
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Todos</option>
+                  <option>Até R$ 50</option>
+                  <option>R$ 50 - R$ 100</option>
+                  <option>R$ 100 - R$ 500</option>
+                  <option>Acima de R$ 500</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Estabelecimento</label
+                >
+                <select
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Todos</option>
+                  <option>Supermercado Extra</option>
+                  <option>Farmácia São Paulo</option>
+                  <option>Posto Ipiranga</option>
+                  <option>Magazine Luiza</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end space-x-2">
+              <button
+                class="bg-gray-100 text-gray-700 hover:bg-gray-200 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+              >
+                Limpar Filtros
+              </button>
+              <button
+                class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+          </div>
+          <div class="divide-y divide-gray-200">
+            <!-- Nota Fiscal 1 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Supermercado Extra
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Alimentação</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >31/05/2025 • 15:42</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 253,75
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 123456789</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Nota Fiscal 2 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Farmácia São Paulo
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Saúde</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >30/05/2025 • 10:15</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 87,50
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 987654321</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Nota Fiscal 3 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Posto Ipiranga
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Transporte</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >29/05/2025 • 18:30</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 150,00
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 456789123</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Nota Fiscal 4 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Magazine Luiza
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Compras</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >28/05/2025 • 14:20</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 899,90
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 789123456</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Nota Fiscal 5 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Restaurante Sabor Brasil
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Alimentação</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >27/05/2025 • 20:45</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 175,30
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 321654987</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Nota Fiscal 6 -->
+            <div class="py-4">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="custom-checkbox mr-3 nota-checkbox"
+                />
+                <div class="flex-1">
+                  <div class="flex justify-between">
+                    <div>
+                      <h3 class="text-base font-medium text-gray-900">
+                        Clínica São Lucas
+                      </h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                          >Saúde</span
+                        >
+                        <span class="text-xs text-gray-500 ml-2"
+                          >26/05/2025 • 09:30</span
+                        >
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-semibold text-gray-900">
+                        R$ 320,00
+                      </p>
+                      <p class="text-xs text-gray-500">NF-e: 654987321</p>
+                    </div>
+                  </div>
+                  <div class="flex justify-end mt-2 space-x-2">
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+                    >
+                      <i class="ri-share-line"></i>
+                    </button>
+                    <button
+                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
+                    >
+                      <i class="ri-delete-bin-line"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- Botão flutuante para scanner -->
+    <div class="fixed right-6 bottom-6">
+      <button
+        id="scannerButton"
+        class="w-16 h-16 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg focus:outline-none"
+      >
+        <i class="ri-qr-scan-line ri-xl"></i>
+      </button>
+    </div>
+    <!-- Modal do Scanner -->
+    <div
+      id="scannerModal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+    >
+      <div
+        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
+      >
+        <div
+          class="p-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-medium text-gray-900">Scanner de QR Code</h3>
+          <button id="closeScanner" class="text-gray-400 hover:text-gray-500">
+            <i class="ri-close-line ri-lg"></i>
+          </button>
+        </div>
+        <div class="relative h-80 bg-black">
+          <div class="camera-container">
+            <video
+              id="cameraFeed"
+              class="w-full h-full object-cover"
+              autoplay
+              playsinline
+              muted
+            ></video>
+            <div class="scanner-area">
+              <div class="scanner-line"></div>
+            </div>
+            <div
+              class="absolute bottom-4 left-0 right-0 text-center text-white text-sm"
+            >
+              Posicione o QR Code da nota fiscal dentro da área demarcada
+            </div>
+          </div>
+          <div
+            id="cameraError"
+            class="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center text-white p-4 text-center hidden"
+          >
+            <div>
+              <i class="ri-error-warning-line ri-2x mb-2"></i>
+              <p>
+                Não foi possível acessar a câmera. Por favor, verifique as
+                permissões do seu dispositivo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de Confirmação de Dados -->
+    <div
+      id="confirmDataModal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+    >
+      <div
+        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
+      >
+        <div
+          class="p-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-medium text-gray-900">
+            Confirmar Dados da Nota
+          </h3>
+          <button
+            id="closeConfirmData"
+            class="text-gray-400 hover:text-gray-500"
+          >
+            <i class="ri-close-line ri-lg"></i>
+          </button>
+        </div>
+        <div class="p-4">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Estabelecimento</label
+              >
+              <input
+                type="text"
+                value="Supermercado Extra"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Valor Total</label
+              >
+              <input
+                type="text"
+                value="R$ 253,75"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Data e Hora</label
+              >
+              <input
+                type="text"
+                value="31/05/2025 15:42"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Número da NF-e</label
+              >
+              <input
+                type="text"
+                value="123456789"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Categoria</label
+              >
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              >
+                <option selected>Alimentação</option>
+                <option>Transporte</option>
+                <option>Saúde</option>
+                <option>Compras</option>
+                <option>Moradia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Observações (opcional)</label
+              >
+              <textarea
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
+          <button
+            id="cancelConfirmData"
+            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Cancelar
+          </button>
+          <button
+            id="saveConfirmData"
+            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de Exportação PDF -->
+    <div
+      id="exportPdfModal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+    >
+      <div
+        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
+      >
+        <div
+          class="p-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-medium text-gray-900">Exportar como PDF</h3>
+          <button id="closeExportPdf" class="text-gray-400 hover:text-gray-500">
+            <i class="ri-close-line ri-lg"></i>
+          </button>
+        </div>
+        <div class="p-4">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Período</label
+              >
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              >
+                <option>Mês atual (Maio 2025)</option>
+                <option>Mês anterior (Abril 2025)</option>
+                <option>Últimos 3 meses</option>
+                <option>Personalizado</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Categorias</label
+              >
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              >
+                <option>Todas as categorias</option>
+                <option>Alimentação</option>
+                <option>Transporte</option>
+                <option>Saúde</option>
+                <option>Compras</option>
+                <option>Moradia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Formato do relatório</label
+              >
+              <select
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
+              >
+                <option>Detalhado (todas as notas)</option>
+                <option>Resumido (apenas totais)</option>
+                <option>Completo (detalhes + gráficos)</option>
+              </select>
+            </div>
+            <div class="flex items-center">
+              <label class="custom-switch">
+                <input type="checkbox" checked />
+                <span class="switch-slider"></span>
+              </label>
+              <span class="ml-3 text-sm text-gray-700">Incluir gráficos</span>
+            </div>
+            <div class="flex items-center">
+              <label class="custom-switch">
+                <input type="checkbox" checked />
+                <span class="switch-slider"></span>
+              </label>
+              <span class="ml-3 text-sm text-gray-700"
+                >Incluir comparativo com mês anterior</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
+          <button
+            id="cancelExportPdf"
+            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Cancelar
+          </button>
+          <button
+            id="confirmExportPdf"
+            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Exportar PDF
+          </button>
+        </div>
+      </div>
+    </div>
+    <script id="searchFilterScript">
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchButton = document.getElementById("searchButton");
+        const searchBar = document.getElementById("searchBar");
+        const filterButton = document.getElementById("filterButton");
+        const filterBar = document.getElementById("filterBar");
+        searchButton.addEventListener("click", function () {
+          searchBar.classList.toggle("hidden");
+          if (!searchBar.classList.contains("hidden")) {
+            filterBar.classList.add("hidden");
+          }
         });
-
-        container.appendChild(div);
-    }
-}
-
-function excluirNota(index) {
-    notas.splice(index, 1);
-    localStorage.setItem('notas', JSON.stringify(notas));
-    atualizarNotas();
-}
-
-async function gerarPDF() {
-    const { jsPDF } = window.jspdf;
-    let doc = new jsPDF();
-
-    doc.text('Relatório de Notas', 10, 10);
-    let y = 20;
-
-    notas.forEach((nota, i) => {
-        doc.text(`${i+1}. Categoria: ${nota.categoria}, Valor: R$ ${nota.valor.toFixed(2)}`, 10, y);
-        y += 10;
-        if (y > 280) {
-            doc.addPage();
-            y = 10;
+        filterButton.addEventListener("click", function () {
+          filterBar.classList.toggle("hidden");
+          if (!filterBar.classList.contains("hidden")) {
+            searchBar.classList.add("hidden");
+          }
+        });
+      });
+    </script>
+    <script id="checkboxSelectionScript">
+      document.addEventListener("DOMContentLoaded", function () {
+        const checkboxes = document.querySelectorAll(".nota-checkbox");
+        const actionBar = document.getElementById("actionBar");
+        const cancelSelection = document.getElementById("cancelSelection");
+        function updateActionBar() {
+          const checkedBoxes = document.querySelectorAll(".nota-checkbox:checked");
+          if (checkedBoxes.length > 0) {
+            actionBar.classList.remove("hidden");
+          } else {
+            actionBar.classList.add("hidden");
+          }
         }
-    });
-
-    doc.save('notas.pdf');
-}
-</script>
-
-</body>
+        checkboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", updateActionBar);
+        });
+        cancelSelection.addEventListener("click", function () {
+          checkboxes.forEach((checkbox) => {
+            checkbox.checked = false;
+          });
+          updateActionBar();
+        });
+      });
+    </script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script id="modalScript">
+      document.addEventListener("DOMContentLoaded", function () {
+        const scannerButton = document.getElementById("scannerButton");
+        const scannerModal = document.getElementById("scannerModal");
+        const closeScanner = document.getElementById("closeScanner");
+        const confirmDataModal = document.getElementById("confirmDataModal");
+        const closeConfirmData = document.getElementById("closeConfirmData");
+        const cancelConfirmData = document.getElementById("cancelConfirmData");
+        const saveConfirmData = document.getElementById("saveConfirmData");
+        const exportPdfModal = document.getElementById("exportPdfModal");
+        const closeExportPdf = document.getElementById("closeExportPdf");
+        const cancelExportPdf = document.getElementById("cancelExportPdf");
+        const confirmExportPdf = document.getElementById("confirmExportPdf");
+        const cameraFeed = document.getElementById("cameraFeed");
+        const cameraError = document.getElementById("cameraError");
+        let html5QrcodeScanner = null;
+        // Funções para abrir e fechar modais
+        function openModal(modal) {
+          modal.classList.remove("hidden");
+          setTimeout(() => {
+            modal.querySelector(".modal-container").classList.remove("scale-95");
+            modal.querySelector(".modal-container").classList.add("scale-100");
+          }, 10);
+        }
+        function closeModal(modal) {
+          modal.querySelector(".modal-container").classList.remove("scale-100");
+          modal.querySelector(".modal-container").classList.add("scale-95");
+          setTimeout(() => {
+            modal.classList.add("hidden");
+          }, 300);
+        }
+        // Scanner Modal
+        scannerButton.addEventListener("click", async function () {
+          openModal(scannerModal);
+          if (html5QrcodeScanner === null) {
+            html5QrcodeScanner = new Html5Qrcode("cameraFeed");
+          }
+          try {
+            const devices = await Html5Qrcode.getCameras();
+            if (devices && devices.length) {
+              const cameraId = devices[devices.length - 1].id;
+              await html5QrcodeScanner.start(
+                cameraId,
+                {
+                  fps: 10,
+                  qrbox: { width: 250, height: 250 },
+                },
+                (decodedText, decodedResult) => {
+                  console.log(`QR Code detected: ${decodedText}`);
+                  html5QrcodeScanner.stop();
+                  closeModal(scannerModal);
+                  setTimeout(() => {
+                    openModal(confirmDataModal);
+                  }, 500);
+                },
+                (errorMessage) => {
+                  // console.log(errorMessage);
+                },
+              );
+            } else {
+              cameraError.classList.remove("hidden");
+            }
+          } catch (err) {
+            console.error("Error starting camera:", err);
+            cameraError.classList.remove("hidden");
+          }
+        });
+        closeScanner.addEventListener("click", function () {
+          if (html5QrcodeScanner) {
+            html5QrcodeScanner
+              .stop()
+              .then(() => {
+                closeModal(scannerModal);
+              })
+              .catch((err) => {
+                console.error("Error stopping camera:", err);
+                closeModal(scannerModal);
+              });
+          } else {
+            closeModal(scannerModal);
+          }
+        });
+        closeScanner.addEventListener("click", function () {
+          closeModal(scannerModal);
+        });
+        // Confirm Data Modal
+        closeConfirmData.addEventListener("click", function () {
+          closeModal(confirmDataModal);
+        });
+        cancelConfirmData.addEventListener("click", function () {
+          closeModal(confirmDataModal);
+        });
+        saveConfirmData.addEventListener("click", function () {
+          closeModal(confirmDataModal);
+          // Aqui você adicionaria o código para salvar os dados
+        });
+        // Export PDF Modal
+        document.querySelectorAll(".ri-share-line").forEach((button) => {
+          button.addEventListener("click", function () {
+            openModal(exportPdfModal);
+          });
+        });
+        closeExportPdf.addEventListener("click", function () {
+          closeModal(exportPdfModal);
+        });
+        cancelExportPdf.addEventListener("click", function () {
+          closeModal(exportPdfModal);
+        });
+        confirmExportPdf.addEventListener("click", function () {
+          closeModal(exportPdfModal);
+          // Aqui você adicionaria o código para exportar o PDF
+        });
+      });
+    </script>
+  </body>
 </html>
