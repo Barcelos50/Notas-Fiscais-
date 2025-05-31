@@ -2,7 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Gerenciador de Notas Fiscais</title>
     <script src="https://cdn.tailwindcss.com/3.4.16"></script>
     <script>
@@ -1002,6 +1005,7 @@
         const cameraFeed = document.getElementById("cameraFeed");
         const cameraError = document.getElementById("cameraError");
         let html5QrcodeScanner = null;
+        let isScanning = false;
         // Funções para abrir e fechar modais
         function openModal(modal) {
           modal.classList.remove("hidden");
@@ -1019,57 +1023,77 @@
         }
         // Scanner Modal
         scannerButton.addEventListener("click", async function () {
+          if (isScanning) return;
+
           openModal(scannerModal);
-          if (html5QrcodeScanner === null) {
-            html5QrcodeScanner = new Html5Qrcode("cameraFeed");
-          }
           try {
+            if (!html5QrcodeScanner) {
+              html5QrcodeScanner = new Html5Qrcode("cameraFeed", {
+                verbose: false,
+                experimentalFeatures: {
+                  useBarCodeDetectorIfSupported: true,
+                },
+              });
+            }
+
             const devices = await Html5Qrcode.getCameras();
             if (devices && devices.length) {
-              const cameraId = devices[devices.length - 1].id;
+              const cameraId = devices[0].id;
+              isScanning = true;
+
               await html5QrcodeScanner.start(
                 cameraId,
                 {
                   fps: 10,
-                  qrbox: { width: 250, height: 250 },
+                  qrbox: 250,
+                  aspectRatio: 1.0,
+                  formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
                 },
-                (decodedText, decodedResult) => {
-                  console.log(`QR Code detected: ${decodedText}`);
-                  html5QrcodeScanner.stop();
-                  closeModal(scannerModal);
-                  setTimeout(() => {
-                    openModal(confirmDataModal);
-                  }, 500);
+                (decodedText) => {
+                  if (html5QrcodeScanner) {
+                    html5QrcodeScanner
+                      .stop()
+                      .then(() => {
+                        isScanning = false;
+                        closeModal(scannerModal);
+                        setTimeout(() => openModal(confirmDataModal), 300);
+                      })
+                      .catch(() => {
+                        isScanning = false;
+                        cameraError.classList.remove("hidden");
+                      });
+                  }
                 },
-                (errorMessage) => {
-                  // console.log(errorMessage);
+                (error) => {
+                  if (error?.message?.includes("NotFoundError")) {
+                    cameraError.classList.remove("hidden");
+                  }
                 },
               );
             } else {
               cameraError.classList.remove("hidden");
             }
           } catch (err) {
-            console.error("Error starting camera:", err);
+            isScanning = false;
             cameraError.classList.remove("hidden");
+            console.error("Camera error:", err);
           }
         });
         closeScanner.addEventListener("click", function () {
-          if (html5QrcodeScanner) {
+          if (html5QrcodeScanner && isScanning) {
             html5QrcodeScanner
               .stop()
               .then(() => {
+                isScanning = false;
                 closeModal(scannerModal);
               })
-              .catch((err) => {
-                console.error("Error stopping camera:", err);
+              .catch(() => {
+                isScanning = false;
                 closeModal(scannerModal);
               });
           } else {
             closeModal(scannerModal);
           }
-        });
-        closeScanner.addEventListener("click", function () {
-          closeModal(scannerModal);
         });
         // Confirm Data Modal
         closeConfirmData.addEventListener("click", function () {
