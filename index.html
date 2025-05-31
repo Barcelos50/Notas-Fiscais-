@@ -717,22 +717,11 @@
           </button>
         </div>
         <div class="relative h-80 bg-black">
-          <div class="camera-container">
-            <video
-              id="cameraFeed"
-              class="w-full h-full object-cover"
-              autoplay
-              playsinline
-              muted
-            ></video>
-            <div class="scanner-area">
-              <div class="scanner-line"></div>
-            </div>
-            <div
-              class="absolute bottom-4 left-0 right-0 text-center text-white text-sm"
-            >
-              Posicione o QR Code da nota fiscal dentro da área demarcada
-            </div>
+          <div id="qr-reader" class="w-full h-full"></div>
+          <div
+            class="absolute bottom-4 left-0 right-0 text-center text-white text-sm"
+          >
+            Posicione o QR Code da nota fiscal dentro da área demarcada
           </div>
           <div
             id="cameraError"
@@ -1285,11 +1274,8 @@
           if (isScanning) return;
           openModal(scannerModal);
           try {
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            cameraFeed.srcObject = stream;
-            cameraFeed.play();
             if (!html5QrcodeScanner) {
-              html5QrcodeScanner = new Html5Qrcode("cameraFeed", {
+              html5QrcodeScanner = new Html5Qrcode("qr-reader", {
                 verbose: false,
                 experimentalFeatures: {
                   useBarCodeDetectorIfSupported: true,
