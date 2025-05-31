@@ -853,6 +853,197 @@
         </div>
       </div>
     </div>
+    <!-- Modal de Confirmação de Exclusão -->
+    <div
+      id="deleteConfirmModal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+    >
+      <div
+        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
+      >
+        <div class="p-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Confirmar Exclusão</h3>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center mb-4">
+            <div
+              class="w-12 h-12 flex items-center justify-center bg-red-100 rounded-full"
+            >
+              <i class="ri-error-warning-line text-red-600 ri-xl"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-gray-900 font-medium">
+                Tem certeza que deseja excluir esta nota fiscal?
+              </p>
+              <p class="text-gray-500 text-sm mt-1">
+                Esta ação não poderá ser desfeita.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 flex justify-end space-x-2">
+          <button
+            id="cancelDelete"
+            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Cancelar
+          </button>
+          <button
+            id="confirmDelete"
+            class="bg-red-600 text-white hover:bg-red-700 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Confirmar exclusão
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Modal de Compartilhamento -->
+    <div
+      id="shareModal"
+      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
+    >
+      <div
+        class="modal-container bg-white w-full max-w-lg mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
+      >
+        <div
+          class="p-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h3 class="text-lg font-medium text-gray-900">
+            Compartilhar Notas Fiscais
+          </h3>
+          <button id="closeShare" class="text-gray-400 hover:text-gray-500">
+            <i class="ri-close-line ri-lg"></i>
+          </button>
+        </div>
+        <div class="p-4">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Destinatários</label
+              >
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  placeholder="Digite e-mails ou números de WhatsApp"
+                  class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
+                />
+                <button
+                  class="bg-gray-100 text-gray-700 hover:bg-gray-200 !rounded-button px-3 py-2 text-sm font-medium whitespace-nowrap"
+                >
+                  <i class="ri-contacts-line mr-1"></i> Contatos
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Mensagem</label
+              >
+              <textarea
+                placeholder="Adicione uma mensagem personalizada"
+                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Formato</label
+                >
+                <select
+                  class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Link compartilhável</option>
+                  <option>PDF</option>
+                  <option>Excel</option>
+                  <option>CSV</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Permissão</label
+                >
+                <select
+                  class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
+                >
+                  <option>Apenas visualização</option>
+                  <option>Visualização e edição</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Expiração do compartilhamento</label
+              >
+              <select
+                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
+              >
+                <option>7 dias</option>
+                <option>30 dias</option>
+                <option>90 dias</option>
+                <option>Sem expiração</option>
+              </select>
+            </div>
+            <div
+              class="flex items-center justify-between bg-blue-50 p-3 rounded-lg"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full"
+                >
+                  <i class="ri-link-m text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-blue-900">
+                    Link de compartilhamento
+                  </p>
+                  <p class="text-xs text-blue-700">
+                    https://app.notas/share/abc123
+                  </p>
+                </div>
+              </div>
+              <button
+                class="bg-blue-100 text-blue-700 hover:bg-blue-200 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap"
+              >
+                Copiar
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                id="whatsappShareButton"
+                class="bg-green-600 text-white hover:bg-green-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
+              >
+                <i class="ri-whatsapp-fill mr-1"></i> WhatsApp
+              </button>
+              <button
+                class="bg-blue-600 text-white hover:bg-blue-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
+              >
+                <i class="ri-mail-fill mr-1"></i> E-mail
+              </button>
+              <button
+                id="saveToFilesButton"
+                class="bg-gray-600 text-white hover:bg-gray-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
+              >
+                <i class="ri-folder-fill mr-1"></i> Arquivos
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
+          <button
+            id="cancelShare"
+            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Cancelar
+          </button>
+          <button
+            id="confirmShare"
+            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
+          >
+            Compartilhar
+          </button>
+        </div>
+      </div>
+    </div>
     <!-- Modal de Exportação PDF -->
     <div
       id="exportPdfModal"
@@ -957,7 +1148,13 @@
         categoryCards.forEach((card) => {
           card.addEventListener("click", () => {
             const category = card.dataset.category;
-
+            const categoryName = {
+              alimentacao: "Alimentação",
+              transporte: "Transporte",
+              saude: "Saúde",
+              compras: "Compras",
+              moradia: "Moradia",
+            }[category];
             categoryCards.forEach((c) => {
               c.classList.remove("ring-2", "ring-primary");
             });
@@ -969,12 +1166,11 @@
             } else {
               selectedCategory = category;
               card.classList.add("ring-2", "ring-primary");
-
               invoiceItems.forEach((item) => {
-                const itemCategory = item
-                  .querySelector(".text-xs.font-medium")
-                  .textContent.toLowerCase();
-                if (itemCategory.includes(category)) {
+                const itemCategory = item.querySelector(
+                  ".text-xs.font-medium",
+                ).textContent;
+                if (itemCategory === categoryName) {
                   item.style.display = "block";
                 } else {
                   item.style.display = "none";
@@ -1024,6 +1220,29 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script id="modalScript">
       document.addEventListener("DOMContentLoaded", function () {
+        const deleteConfirmModal = document.getElementById("deleteConfirmModal");
+        const cancelDelete = document.getElementById("cancelDelete");
+        const confirmDelete = document.getElementById("confirmDelete");
+        let currentDeleteTarget = null;
+        document.querySelectorAll(".ri-delete-bin-line").forEach((button) => {
+          button.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            currentDeleteTarget = this.closest(".py-4");
+            openModal(deleteConfirmModal);
+          });
+        });
+        cancelDelete.addEventListener("click", function () {
+          closeModal(deleteConfirmModal);
+          currentDeleteTarget = null;
+        });
+        confirmDelete.addEventListener("click", function () {
+          if (currentDeleteTarget) {
+            currentDeleteTarget.remove();
+          }
+          closeModal(deleteConfirmModal);
+          currentDeleteTarget = null;
+        });
         const scannerButton = document.getElementById("scannerButton");
         const scannerModal = document.getElementById("scannerModal");
         const closeScanner = document.getElementById("closeScanner");
@@ -1042,8 +1261,8 @@
         const constraints = {
           video: {
             facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { min: 640, ideal: 1280, max: 1920 },
+            height: { min: 480, ideal: 720, max: 1080 },
           },
         };
         // Funções para abrir e fechar modais
@@ -1147,10 +1366,139 @@
           // Aqui você adicionaria o código para salvar os dados
         });
         // Export PDF Modal
+        const shareModal = document.getElementById("shareModal");
+        const closeShare = document.getElementById("closeShare");
+        const cancelShare = document.getElementById("cancelShare");
+        const confirmShare = document.getElementById("confirmShare");
         document.querySelectorAll(".ri-share-line").forEach((button) => {
-          button.addEventListener("click", function () {
-            openModal(exportPdfModal);
+          button.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal(shareModal);
           });
+        });
+        closeShare.addEventListener("click", function () {
+          closeModal(shareModal);
+        });
+        cancelShare.addEventListener("click", function () {
+          closeModal(shareModal);
+        });
+        const whatsappShareButton = document.getElementById("whatsappShareButton");
+        const saveToFilesButton = document.getElementById("saveToFilesButton");
+        saveToFilesButton.addEventListener("click", function () {
+          const formatSelect = document
+            .getElementById("shareModal")
+            .querySelector("select");
+          const selectedFormat = formatSelect.value;
+          if (selectedFormat === "Link compartilhável") {
+            const formatDialog = document.createElement("div");
+            formatDialog.className =
+              "fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center";
+            formatDialog.innerHTML = `
+      <div class="bg-white w-full max-w-xs mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95 transition-transform duration-200">
+      <div class="p-4 border-b border-gray-200">
+      <h3 class="text-lg font-medium text-gray-900">Selecione o formato</h3>
+      </div>
+      <div class="p-4 space-y-3">
+      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="PDF">
+      <i class="ri-file-pdf-line mr-2"></i> PDF
+      </button>
+      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="Excel">
+      <i class="ri-file-excel-line mr-2"></i> Excel
+      </button>
+      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="CSV">
+      <i class="ri-file-text-line mr-2"></i> CSV
+      </button>
+      </div>
+      </div>`;
+            document.body.appendChild(formatDialog);
+            formatDialog.querySelectorAll("button").forEach((button) => {
+              button.addEventListener("click", function () {
+                const format = this.dataset.format;
+                generateAndDownloadFile(format);
+                document.body.removeChild(formatDialog);
+              });
+            });
+            formatDialog.addEventListener("click", function (e) {
+              if (e.target === formatDialog) {
+                document.body.removeChild(formatDialog);
+              }
+            });
+          } else {
+            generateAndDownloadFile(selectedFormat);
+          }
+        });
+        function generateAndDownloadFile(format) {
+          let fileName = `notas_fiscais_${new Date().toISOString().slice(0, 10)}`;
+          let fileExtension = "";
+          let mimeType = "";
+          switch (format) {
+            case "PDF":
+              fileExtension = ".pdf";
+              mimeType = "application/pdf";
+              break;
+            case "Excel":
+              fileExtension = ".xlsx";
+              mimeType =
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+              break;
+            case "CSV":
+              fileExtension = ".csv";
+              mimeType = "text/csv";
+              break;
+            default:
+              fileExtension = ".txt";
+              mimeType = "text/plain";
+          }
+          const link = document.createElement("a");
+          link.download = fileName + fileExtension;
+          link.href = "#"; // Here you would set the actual file URL
+          link.click();
+          const notification = document.createElement("div");
+          notification.className =
+            "fixed bottom-4 right-4 bg-green-50 text-green-800 px-4 py-3 rounded-lg shadow-lg z-50 flex items-center transform transition-transform duration-300 translate-y-0";
+          notification.innerHTML = `
+      <div class="w-8 h-8 flex items-center justify-center bg-green-100 rounded-full mr-3">
+      <i class="ri-check-line text-green-600"></i>
+      </div>
+      <div>
+      <p class="font-medium">Arquivo gerado com sucesso</p>
+      <p class="text-sm text-green-600">O download começará automaticamente</p>
+      </div>`;
+          document.body.appendChild(notification);
+          setTimeout(() => {
+            notification.style.transform = "translateY(150%)";
+            setTimeout(() => document.body.removeChild(notification), 300);
+          }, 3000);
+        }
+        whatsappShareButton.addEventListener("click", function () {
+          const recipientsInput = document.querySelector(
+            '#shareModal input[type="text"]',
+          );
+          const messageInput = document.querySelector("#shareModal textarea");
+          const formatSelect = document.querySelector(
+            "#shareModal select:nth-of-type(1)",
+          );
+          let recipients = recipientsInput.value
+            .split(",")
+            .map((r) => r.trim())
+            .filter((r) => r);
+          let message = messageInput.value || "Compartilhando notas fiscais";
+          let format = formatSelect.value;
+          let whatsappText = `${message}\n\nLink: https://app.notas/share/abc123`;
+          let whatsappUrl = "";
+          if (recipients.length > 0) {
+            let firstRecipient = recipients[0].replace(/\D/g, "");
+            if (firstRecipient) {
+              whatsappUrl = `https://wa.me/${firstRecipient}?text=${encodeURIComponent(whatsappText)}`;
+            }
+          } else {
+            whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
+          }
+          window.open(whatsappUrl, "_blank");
+        });
+        confirmShare.addEventListener("click", function () {
+          closeModal(shareModal);
         });
         closeExportPdf.addEventListener("click", function () {
           closeModal(exportPdfModal);
