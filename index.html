@@ -45,6 +45,72 @@
       font-family: 'Inter', sans-serif;
       background-color: #f9fafb;
       }
+      .scanner-area {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      border: 2px solid rgba(79, 70, 229, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
+      z-index: 10;
+      }
+      .scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(79, 70, 229, 0) 0%, rgba(79, 70, 229, 1) 50%, rgba(79, 70, 229, 0) 100%);
+      box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+      animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+      @keyframes scan {
+      0% { top: 0; }
+      50% { top: calc(100% - 2px); }
+      100% { top: 0; }
+      }
+      .scanner-corners::before,
+      .scanner-corners::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #4f46e5;
+      }
+      .scanner-corners::before {
+      top: -2px;
+      left: -2px;
+      border-right: 0;
+      border-bottom: 0;
+      border-top-left-radius: 8px;
+      }
+      .scanner-corners::after {
+      bottom: -2px;
+      right: -2px;
+      border-left: 0;
+      border-top: 0;
+      border-bottom-right-radius: 8px;
+      }
+      .scanner-progress {
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 2px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 1px;
+      overflow: hidden;
+      }
+      .scanner-progress-bar {
+      width: 0%;
+      height: 100%;
+      background-color: #4f46e5;
+      transition: width 0.3s ease;
+      }
       .custom-checkbox {
       appearance: none;
       width: 1.25rem;
@@ -712,27 +778,60 @@
           class="p-4 border-b border-gray-200 flex justify-between items-center"
         >
           <h3 class="text-lg font-medium text-gray-900">Scanner de QR Code</h3>
-          <button id="closeScanner" class="text-gray-400 hover:text-gray-500">
-            <i class="ri-close-line ri-lg"></i>
-          </button>
+          <div class="flex items-center space-x-2">
+            <button
+              id="switchCamera"
+              class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
+            >
+              <i class="ri-camera-switch-line"></i>
+            </button>
+            <button id="closeScanner" class="text-gray-400 hover:text-gray-500">
+              <i class="ri-close-line ri-lg"></i>
+            </button>
+          </div>
         </div>
         <div class="relative h-80 bg-black">
           <div id="qr-reader" class="w-full h-full"></div>
+          <div class="scanner-area">
+            <div class="scanner-line"></div>
+            <div class="scanner-corners"></div>
+            <div class="scanner-progress">
+              <div class="scanner-progress-bar" id="scanProgress"></div>
+            </div>
+          </div>
           <div
-            class="absolute bottom-4 left-0 right-0 text-center text-white text-sm"
+            class="absolute bottom-16 left-0 right-0 text-center text-white text-sm px-4"
           >
-            Posicione o QR Code da nota fiscal dentro da área demarcada
+            <p class="bg-black bg-opacity-50 py-2 rounded-lg inline-block">
+              <i class="ri-qr-scan-line mr-2"></i>
+              Posicione o QR Code da nota fiscal dentro do quadrado
+            </p>
           </div>
           <div
             id="cameraError"
-            class="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center text-white p-4 text-center hidden"
+            class="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center text-white p-4 text-center hidden"
           >
-            <div>
-              <i class="ri-error-warning-line ri-2x mb-2"></i>
-              <p>
-                Não foi possível acessar a câmera. Por favor, verifique as
-                permissões do seu dispositivo.
+            <div class="bg-red-900 bg-opacity-50 p-6 rounded-lg max-w-xs">
+              <i class="ri-error-warning-line ri-2x mb-3"></i>
+              <p class="font-medium mb-2">Erro ao acessar a câmera</p>
+              <p class="text-sm opacity-90 mb-4">
+                Verifique se seu dispositivo possui uma câmera e se as
+                permissões foram concedidas.
               </p>
+              <button
+                id="retryCamera"
+                class="bg-white text-red-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          </div>
+          <div
+            id="scanSuccess"
+            class="absolute inset-0 bg-green-500 bg-opacity-20 items-center justify-center hidden"
+          >
+            <div class="bg-white rounded-full p-3 animate-bounce">
+              <i class="ri-check-line ri-2x text-green-500"></i>
             </div>
           </div>
         </div>
@@ -1213,6 +1312,142 @@
         const cancelDelete = document.getElementById("cancelDelete");
         const confirmDelete = document.getElementById("confirmDelete");
         let currentDeleteTarget = null;
+        let scanner = null;
+        function initQRScanner() {
+          const scannerArea = document.getElementById("qr-reader");
+          if (!scannerArea) return;
+
+          scanner = new Html5Qrcode("qr-reader");
+          const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+          };
+          scanner
+            .start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
+            .catch((err) => {
+              document.getElementById("cameraError").classList.remove("hidden");
+              console.error(err);
+            });
+        }
+        function onScanSuccess(decodedText, decodedResult) {
+          document.getElementById("scanSuccess").classList.remove("hidden");
+          setTimeout(() => {
+            stopScanning();
+            closeModal(document.getElementById("scannerModal"));
+            setTimeout(() => {
+              const confirmDataModal = document.getElementById("confirmDataModal");
+              try {
+                const data = JSON.parse(decodedText);
+                fillConfirmationData(data);
+              } catch (e) {
+                fillConfirmationData({
+                  establishment: "Estabelecimento não identificado",
+                  amount: "0,00",
+                  nfeNumber: decodedText,
+                });
+              }
+              openModal(confirmDataModal);
+            }, 300);
+          }, 1000);
+        }
+        function onScanError(error) {
+          // Silently handle scan errors
+          console.log(error);
+        }
+        function stopScanning() {
+          if (scanner) {
+            scanner
+              .stop()
+              .then(() => {
+                scanner = null;
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
+        }
+        function handleScanSuccess(qrData) {
+          try {
+            const data = JSON.parse(qrData);
+            document.getElementById("scanSuccess").classList.remove("hidden");
+            setTimeout(() => {
+              stopScanning();
+              closeModal(document.getElementById("scannerModal"));
+              setTimeout(() => {
+                const confirmDataModal = document.getElementById("confirmDataModal");
+                fillConfirmationData(data);
+                openModal(confirmDataModal);
+              }, 300);
+            }, 1000);
+          } catch (error) {
+            console.error("Invalid QR code data:", error);
+          }
+        }
+        function fillConfirmationData(data) {
+          const inputs = document
+            .getElementById("confirmDataModal")
+            .getElementsByTagName("input");
+          const dateStr = new Date().toLocaleString("pt-BR");
+          for (let input of inputs) {
+            if (input.value.includes("R$")) {
+              input.value = data.amount
+                ? `R$ ${parseFloat(data.amount).toFixed(2)}`
+                : "";
+            } else if (input.value.includes("/")) {
+              input.value = dateStr;
+            } else if (input.value.length === 9) {
+              input.value = data.nfeNumber || "";
+            } else {
+              input.value = data.establishment || "";
+            }
+          }
+        }
+        function stopScanning() {
+          if (codeReader) {
+            codeReader.reset();
+            scannerActive = false;
+          }
+        }
+        function processScanResult(result) {
+          try {
+            const data = JSON.parse(result);
+            document
+              .getElementById("confirmDataModal")
+              .querySelector('input[value="Supermercado Extra"]').value =
+              data.establishment || "";
+            document
+              .getElementById("confirmDataModal")
+              .querySelector('input[value="R$ 253,75"]').value = data.amount
+              ? `R$ ${data.amount}`
+              : "";
+            document
+              .getElementById("confirmDataModal")
+              .querySelector('input[value="31/05/2025 15:42"]').value =
+              data.date || "";
+            document
+              .getElementById("confirmDataModal")
+              .querySelector('input[value="123456789"]').value = data.nfeNumber || "";
+            const successOverlay = document.createElement("div");
+            successOverlay.className =
+              "absolute inset-0 bg-green-500 bg-opacity-20 flex items-center justify-center z-20";
+            successOverlay.innerHTML = `
+      <div class="bg-white rounded-full p-3">
+      <i class="ri-check-line ri-2x text-green-500"></i>
+      </div>
+      `;
+            document.getElementById("qr-reader").appendChild(successOverlay);
+            setTimeout(() => {
+              closeModal(document.getElementById("scannerModal"));
+              setTimeout(() => {
+                openModal(document.getElementById("confirmDataModal"));
+                successOverlay.remove();
+              }, 300);
+            }, 1000);
+          } catch (error) {
+            console.error("Error processing scan result:", error);
+          }
+        }
         document.querySelectorAll(".ri-delete-bin-line").forEach((button) => {
           button.addEventListener("click", function (e) {
             e.preventDefault();
@@ -1270,60 +1505,49 @@
           }, 300);
         }
         // Scanner Modal
-        scannerButton.addEventListener("click", async function () {
-          if (isScanning) return;
+        scannerButton.addEventListener("click", function () {
+          if (scannerActive) return;
+          const scannerModal = document.getElementById("scannerModal");
           openModal(scannerModal);
-          try {
-            if (!html5QrcodeScanner) {
-              html5QrcodeScanner = new Html5Qrcode("qr-reader", {
-                verbose: false,
-                experimentalFeatures: {
-                  useBarCodeDetectorIfSupported: true,
-                },
-              });
-            }
-            const devices = await Html5Qrcode.getCameras();
-            if (devices && devices.length) {
-              const cameraId = devices[devices.length - 1].id;
-              isScanning = true;
-              await html5QrcodeScanner.start(
-                cameraId,
-                {
-                  fps: 10,
-                  qrbox: 250,
-                  aspectRatio: 1.0,
-                  formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-                },
-                (decodedText) => {
-                  if (html5QrcodeScanner) {
-                    html5QrcodeScanner
-                      .stop()
-                      .then(() => {
-                        isScanning = false;
-                        closeModal(scannerModal);
-                        setTimeout(() => openModal(confirmDataModal), 300);
-                      })
-                      .catch(() => {
-                        isScanning = false;
-                        cameraError.classList.remove("hidden");
-                      });
-                  }
-                },
-                (error) => {
-                  if (error?.message?.includes("NotFoundError")) {
-                    cameraError.classList.remove("hidden");
-                  }
-                },
-              );
-            } else {
-              cameraError.classList.remove("hidden");
-            }
-          } catch (err) {
-            isScanning = false;
-            cameraError.classList.remove("hidden");
-            console.error("Camera error:", err);
-          }
+          initQRScanner();
         });
+        document
+          .getElementById("closeScanner")
+          .addEventListener("click", function () {
+            stopScanning();
+            closeModal(document.getElementById("scannerModal"));
+          });
+        document.getElementById("retryCamera").addEventListener("click", function () {
+          document.getElementById("cameraError").classList.add("hidden");
+          initQRScanner();
+        });
+        document
+          .getElementById("switchCamera")
+          .addEventListener("click", function () {
+            stopScanning();
+            initQRScanner();
+          });
+        scannerButton.addEventListener("click", function () {
+          const scannerModal = document.getElementById("scannerModal");
+          openModal(scannerModal);
+          initQRScanner();
+        });
+        document
+          .getElementById("closeScanner")
+          .addEventListener("click", function () {
+            stopScanning();
+            closeModal(document.getElementById("scannerModal"));
+          });
+        document.getElementById("retryCamera").addEventListener("click", function () {
+          document.getElementById("cameraError").classList.add("hidden");
+          initQRScanner();
+        });
+        document
+          .getElementById("switchCamera")
+          .addEventListener("click", function () {
+            stopScanning();
+            initQRScanner();
+          });
         closeScanner.addEventListener("click", function () {
           if (html5QrcodeScanner && isScanning) {
             html5QrcodeScanner
