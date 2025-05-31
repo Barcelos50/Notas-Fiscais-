@@ -1,1726 +1,831 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Gerenciador de Notas Fiscais</title>
-    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: { primary: "#4f46e5", secondary: "#8b5cf6" },
-            borderRadius: {
-              none: "0px",
-              sm: "4px",
-              DEFAULT: "8px",
-              md: "12px",
-              lg: "16px",
-              xl: "20px",
-              "2xl": "24px",
-              "3xl": "32px",
-              full: "9999px",
-              button: "8px",
-            },
-          },
-        },
-      };
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Visitas Pastorais</title>
     <style>
-      :where([class^="ri-"])::before { content: "\f3c2"; }
-      body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f9fafb;
-      }
-      .scanner-area {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 280px;
-      height: 280px;
-      border: 2px solid rgba(79, 70, 229, 0.3);
-      border-radius: 16px;
-      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.7);
-      z-index: 10;
-      }
-      .scanner-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, rgba(79, 70, 229, 0) 0%, rgba(79, 70, 229, 1) 50%, rgba(79, 70, 229, 0) 100%);
-      box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
-      animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      }
-      @keyframes scan {
-      0% { top: 0; }
-      50% { top: calc(100% - 2px); }
-      100% { top: 0; }
-      }
-      .scanner-corners::before,
-      .scanner-corners::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #4f46e5;
-      }
-      .scanner-corners::before {
-      top: -2px;
-      left: -2px;
-      border-right: 0;
-      border-bottom: 0;
-      border-top-left-radius: 8px;
-      }
-      .scanner-corners::after {
-      bottom: -2px;
-      right: -2px;
-      border-left: 0;
-      border-top: 0;
-      border-bottom-right-radius: 8px;
-      }
-      .scanner-progress {
-      position: absolute;
-      bottom: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 2px;
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 1px;
-      overflow: hidden;
-      }
-      .scanner-progress-bar {
-      width: 0%;
-      height: 100%;
-      background-color: #4f46e5;
-      transition: width 0.3s ease;
-      }
-      .custom-checkbox {
-      appearance: none;
-      width: 1.25rem;
-      height: 1.25rem;
-      border: 2px solid #d1d5db;
-      border-radius: 4px;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      }
-      .custom-checkbox:checked {
-      background-color: #4f46e5;
-      border-color: #4f46e5;
-      }
-      .custom-checkbox:checked::after {
-      content: '';
-      position: absolute;
-      left: 6px;
-      top: 2px;
-      width: 5px;
-      height: 10px;
-      border: solid white;
-      border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-      }
-      .custom-switch {
-      position: relative;
-      display: inline-block;
-      width: 3rem;
-      height: 1.5rem;
-      }
-      .custom-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-      }
-      .switch-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #e5e7eb;
-      transition: .4s;
-      border-radius: 34px;
-      }
-      .switch-slider:before {
-      position: absolute;
-      content: "";
-      height: 1.1rem;
-      width: 1.1rem;
-      left: 4px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-      }
-      input:checked + .switch-slider {
-      background-color: #4f46e5;
-      }
-      input:checked + .switch-slider:before {
-      transform: translateX(1.5rem);
-      }
-      .modal {
-      transition: opacity 0.25s ease;
-      }
-      .modal-container {
-      transition: transform 0.25s ease;
-      }
-      .camera-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      }
-      .scanner-area {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 70%;
-      height: 50%;
-      border: 2px solid #4f46e5;
-      border-radius: 8px;
-      box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
-      z-index: 10;
-      }
-      .scanner-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background-color: #4f46e5;
-      animation: scan 2s linear infinite;
-      }
-      @keyframes scan {
-      0% { top: 0; }
-      50% { top: 100%; }
-      100% { top: 0; }
-      }
-    </style>
-  </head>
-  <body class="min-h-screen">
-    <!-- Cabeçalho -->
-    <header class="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center">
-            <h1 class="text-xl font-semibold text-gray-900">
-              Gerenciador de Notas Fiscais
-            </h1>
-          </div>
-          <div class="flex items-center space-x-4">
-            <button
-              id="filterButton"
-              class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-              title="Filtrar"
-            >
-              <i class="ri-filter-3-line ri-lg"></i>
-            </button>
-            <button
-              id="searchButton"
-              class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-              title="Buscar"
-            >
-              <i class="ri-search-line ri-lg"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-    <!-- Conteúdo principal -->
-    <main class="pt-16 pb-24">
-      <!-- Categorias -->
-      <section class="bg-white py-4 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 class="text-lg font-medium text-gray-700 mb-3">Categorias</h2>
-          <div class="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-            <div
-              class="flex-shrink-0 w-32 bg-blue-50 rounded-lg p-3 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors duration-200"
-              data-category="alimentacao"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full mb-2"
-              >
-                <i class="ri-restaurant-line ri-lg text-blue-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Alimentação</h3>
-              <p class="text-lg font-semibold text-gray-900">R$ 850,75</p>
-            </div>
-            <div
-              class="flex-shrink-0 w-32 bg-purple-50 rounded-lg p-3 border border-purple-100"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-full mb-2"
-              >
-                <i class="ri-car-line ri-lg text-purple-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Transporte</h3>
-              <p class="text-lg font-semibold text-gray-900">R$ 325,50</p>
-            </div>
-            <div
-              class="flex-shrink-0 w-32 bg-green-50 rounded-lg p-3 border border-green-100"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-green-100 rounded-full mb-2"
-              >
-                <i class="ri-medicine-bottle-line ri-lg text-green-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Saúde</h3>
-              <p class="text-lg font-semibold text-gray-900">R$ 420,30</p>
-            </div>
-            <div
-              class="flex-shrink-0 w-32 bg-yellow-50 rounded-lg p-3 border border-yellow-100"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-yellow-100 rounded-full mb-2"
-              >
-                <i class="ri-shopping-bag-line ri-lg text-yellow-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Compras</h3>
-              <p class="text-lg font-semibold text-gray-900">R$ 1.250,45</p>
-            </div>
-            <div
-              class="flex-shrink-0 w-32 bg-red-50 rounded-lg p-3 border border-red-100"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-red-100 rounded-full mb-2"
-              >
-                <i class="ri-home-line ri-lg text-red-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Moradia</h3>
-              <p class="text-lg font-semibold text-gray-900">R$ 1.800,00</p>
-            </div>
-            <div
-              class="flex-shrink-0 w-32 bg-indigo-50 rounded-lg p-3 border border-indigo-100"
-            >
-              <div
-                class="w-10 h-10 flex items-center justify-center bg-indigo-100 rounded-full mb-2"
-              >
-                <i class="ri-add-line ri-lg text-indigo-600"></i>
-              </div>
-              <h3 class="text-sm font-medium text-gray-800">Adicionar</h3>
-              <p class="text-lg font-semibold text-transparent">-</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- Resumo Mensal -->
-      <section class="bg-white mt-4 py-4 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center mb-3">
-            <h2 class="text-lg font-medium text-gray-700">Resumo Mensal</h2>
-            <div class="relative">
-              <select
-                id="monthSelector"
-                class="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-button focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-sm"
-              >
-                <option value="5">Maio 2025</option>
-                <option value="4">Abril 2025</option>
-                <option value="3">Março 2025</option>
-                <option value="2">Fevereiro 2025</option>
-                <option value="1">Janeiro 2025</option>
-              </select>
-              <div
-                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
-              >
-                <i class="ri-arrow-down-s-line"></i>
-              </div>
-            </div>
-          </div>
-          <div
-            class="bg-gradient-to-r from-primary to-secondary rounded-lg p-4 text-white"
-          >
-            <div class="flex justify-between items-center">
-              <div>
-                <p class="text-white text-opacity-80 text-sm">Total do mês</p>
-                <h3 class="text-2xl font-bold">R$ 4.647,00</h3>
-              </div>
-              <div class="text-right">
-                <p class="text-white text-opacity-80 text-sm">
-                  31 notas fiscais
-                </p>
-                <p class="text-sm font-medium">Maio 2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- Lista de Notas Fiscais -->
-      <section class="mt-4 bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-medium text-gray-700">Notas Fiscais</h2>
-            <div class="relative hidden" id="actionBar">
-              <div class="flex space-x-2">
-                <button
-                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
-                >
-                  <i class="ri-delete-bin-line mr-1"></i> Excluir
-                </button>
-                <button
-                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
-                >
-                  <i class="ri-share-line mr-1"></i> Compartilhar
-                </button>
-                <button
-                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
-                >
-                  <i class="ri-price-tag-3-line mr-1"></i> Recategorizar
-                </button>
-                <button
-                  class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap flex items-center"
-                  id="cancelSelection"
-                >
-                  <i class="ri-close-line mr-1"></i> Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-          <!-- Campo de busca (inicialmente oculto) -->
-          <div id="searchBar" class="mb-4 hidden">
-            <div class="relative">
-              <div
-                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
-              >
-                <i class="ri-search-line text-gray-400"></i>
-              </div>
-              <input
-                type="text"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full pl-10 p-2.5 focus:ring-primary focus:border-primary"
-                placeholder="Digite para buscar notas fiscais..."
-              />
-            </div>
-          </div>
-          <!-- Filtros (inicialmente ocultos) -->
-          <div id="filterBar" class="mb-4 hidden">
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Período</label
-                >
-                <select
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Todos</option>
-                  <option>Últimos 7 dias</option>
-                  <option>Últimos 30 dias</option>
-                  <option>Este mês</option>
-                  <option>Mês passado</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Categoria</label
-                >
-                <select
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Todas</option>
-                  <option>Alimentação</option>
-                  <option>Transporte</option>
-                  <option>Saúde</option>
-                  <option>Compras</option>
-                  <option>Moradia</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Valor</label
-                >
-                <select
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Todos</option>
-                  <option>Até R$ 50</option>
-                  <option>R$ 50 - R$ 100</option>
-                  <option>R$ 100 - R$ 500</option>
-                  <option>Acima de R$ 500</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Estabelecimento</label
-                >
-                <select
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Todos</option>
-                  <option>Supermercado Extra</option>
-                  <option>Farmácia São Paulo</option>
-                  <option>Posto Ipiranga</option>
-                  <option>Magazine Luiza</option>
-                </select>
-              </div>
-            </div>
-            <div class="mt-3 flex justify-end space-x-2">
-              <button
-                class="bg-gray-100 text-gray-700 hover:bg-gray-200 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-              >
-                Limpar Filtros
-              </button>
-              <button
-                class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-              >
-                Aplicar Filtros
-              </button>
-            </div>
-          </div>
-          <div class="divide-y divide-gray-200">
-            <!-- Nota Fiscal 1 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Supermercado Extra
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Alimentação</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >31/05/2025 • 15:42</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 253,75
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 123456789</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Nota Fiscal 2 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Farmácia São Paulo
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Saúde</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >30/05/2025 • 10:15</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 87,50
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 987654321</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Nota Fiscal 3 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Posto Ipiranga
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Transporte</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >29/05/2025 • 18:30</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 150,00
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 456789123</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Nota Fiscal 4 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Magazine Luiza
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Compras</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >28/05/2025 • 14:20</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 899,90
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 789123456</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Nota Fiscal 5 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Restaurante Sabor Brasil
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Alimentação</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >27/05/2025 • 20:45</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 175,30
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 321654987</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Nota Fiscal 6 -->
-            <div class="py-4">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  class="custom-checkbox mr-3 nota-checkbox"
-                />
-                <div class="flex-1">
-                  <div class="flex justify-between">
-                    <div>
-                      <h3 class="text-base font-medium text-gray-900">
-                        Clínica São Lucas
-                      </h3>
-                      <div class="flex items-center mt-1">
-                        <span
-                          class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full"
-                          >Saúde</span
-                        >
-                        <span class="text-xs text-gray-500 ml-2"
-                          >26/05/2025 • 09:30</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-lg font-semibold text-gray-900">
-                        R$ 320,00
-                      </p>
-                      <p class="text-xs text-gray-500">NF-e: 654987321</p>
-                    </div>
-                  </div>
-                  <div class="flex justify-end mt-2 space-x-2">
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-                    >
-                      <i class="ri-share-line"></i>
-                    </button>
-                    <button
-                      class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 focus:outline-none"
-                    >
-                      <i class="ri-delete-bin-line"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-    <!-- Botão flutuante para scanner -->
-    <div class="fixed right-6 bottom-6">
-      <button
-        id="scannerButton"
-        class="w-16 h-16 flex items-center justify-center bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg focus:outline-none"
-      >
-        <i class="ri-qr-scan-line ri-xl"></i>
-      </button>
-    </div>
-    <!-- Modal do Scanner -->
-    <div
-      id="scannerModal"
-      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
-      >
-        <div
-          class="p-4 border-b border-gray-200 flex justify-between items-center"
-        >
-          <h3 class="text-lg font-medium text-gray-900">Scanner de QR Code</h3>
-          <div class="flex items-center space-x-2">
-            <button
-              id="switchCamera"
-              class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary focus:outline-none"
-            >
-              <i class="ri-camera-switch-line"></i>
-            </button>
-            <button id="closeScanner" class="text-gray-400 hover:text-gray-500">
-              <i class="ri-close-line ri-lg"></i>
-            </button>
-          </div>
-        </div>
-        <div class="relative h-80 bg-black">
-          <div id="qr-reader" class="w-full h-full"></div>
-          <div class="scanner-area">
-            <div class="scanner-line"></div>
-            <div class="scanner-corners"></div>
-            <div class="scanner-progress">
-              <div class="scanner-progress-bar" id="scanProgress"></div>
-            </div>
-          </div>
-          <div
-            class="absolute bottom-16 left-0 right-0 text-center text-white text-sm px-4"
-          >
-            <p class="bg-black bg-opacity-50 py-2 rounded-lg inline-block">
-              <i class="ri-qr-scan-line mr-2"></i>
-              Posicione o QR Code da nota fiscal dentro do quadrado
-            </p>
-          </div>
-          <div
-            id="cameraError"
-            class="absolute inset-0 bg-black bg-opacity-90 flex items-center justify-center text-white p-4 text-center hidden"
-          >
-            <div class="bg-red-900 bg-opacity-50 p-6 rounded-lg max-w-xs">
-              <i class="ri-error-warning-line ri-2x mb-3"></i>
-              <p class="font-medium mb-2">Erro ao acessar a câmera</p>
-              <p class="text-sm opacity-90 mb-4">
-                Verifique se seu dispositivo possui uma câmera e se as
-                permissões foram concedidas.
-              </p>
-              <button
-                id="retryCamera"
-                class="bg-white text-red-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          </div>
-          <div
-            id="scanSuccess"
-            class="absolute inset-0 bg-green-500 bg-opacity-20 items-center justify-center hidden"
-          >
-            <div class="bg-white rounded-full p-3 animate-bounce">
-              <i class="ri-check-line ri-2x text-green-500"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de Confirmação de Dados -->
-    <div
-      id="confirmDataModal"
-      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
-      >
-        <div
-          class="p-4 border-b border-gray-200 flex justify-between items-center"
-        >
-          <h3 class="text-lg font-medium text-gray-900">
-            Confirmar Dados da Nota
-          </h3>
-          <button
-            id="closeConfirmData"
-            class="text-gray-400 hover:text-gray-500"
-          >
-            <i class="ri-close-line ri-lg"></i>
-          </button>
-        </div>
-        <div class="p-4">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Estabelecimento</label
-              >
-              <input
-                type="text"
-                value="Supermercado Extra"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Valor Total</label
-              >
-              <input
-                type="text"
-                value="R$ 253,75"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Data e Hora</label
-              >
-              <input
-                type="text"
-                value="31/05/2025 15:42"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Número da NF-e</label
-              >
-              <input
-                type="text"
-                value="123456789"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Categoria</label
-              >
-              <select
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              >
-                <option selected>Alimentação</option>
-                <option>Transporte</option>
-                <option>Saúde</option>
-                <option>Compras</option>
-                <option>Moradia</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Observações (opcional)</label
-              >
-              <textarea
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-                rows="2"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
-          <button
-            id="cancelConfirmData"
-            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Cancelar
-          </button>
-          <button
-            id="saveConfirmData"
-            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Salvar
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de Confirmação de Exclusão -->
-    <div
-      id="deleteConfirmModal"
-      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
-      >
-        <div class="p-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Confirmar Exclusão</h3>
-        </div>
-        <div class="p-6">
-          <div class="flex items-center mb-4">
-            <div
-              class="w-12 h-12 flex items-center justify-center bg-red-100 rounded-full"
-            >
-              <i class="ri-error-warning-line text-red-600 ri-xl"></i>
-            </div>
-            <div class="ml-4">
-              <p class="text-gray-900 font-medium">
-                Tem certeza que deseja excluir esta nota fiscal?
-              </p>
-              <p class="text-gray-500 text-sm mt-1">
-                Esta ação não poderá ser desfeita.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="px-4 py-3 bg-gray-50 flex justify-end space-x-2">
-          <button
-            id="cancelDelete"
-            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Cancelar
-          </button>
-          <button
-            id="confirmDelete"
-            class="bg-red-600 text-white hover:bg-red-700 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Confirmar exclusão
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de Compartilhamento -->
-    <div
-      id="shareModal"
-      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-container bg-white w-full max-w-lg mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
-      >
-        <div
-          class="p-4 border-b border-gray-200 flex justify-between items-center"
-        >
-          <h3 class="text-lg font-medium text-gray-900">
-            Compartilhar Notas Fiscais
-          </h3>
-          <button id="closeShare" class="text-gray-400 hover:text-gray-500">
-            <i class="ri-close-line ri-lg"></i>
-          </button>
-        </div>
-        <div class="p-4">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Destinatários</label
-              >
-              <div class="flex space-x-2">
-                <input
-                  type="text"
-                  placeholder="Digite e-mails ou números de WhatsApp"
-                  class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
-                />
-                <button
-                  class="bg-gray-100 text-gray-700 hover:bg-gray-200 !rounded-button px-3 py-2 text-sm font-medium whitespace-nowrap"
-                >
-                  <i class="ri-contacts-line mr-1"></i> Contatos
-                </button>
-              </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Mensagem</label
-              >
-              <textarea
-                placeholder="Adicione uma mensagem personalizada"
-                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
-                rows="3"
-              ></textarea>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Formato</label
-                >
-                <select
-                  class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Link compartilhável</option>
-                  <option>PDF</option>
-                  <option>Excel</option>
-                  <option>CSV</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
-                  >Permissão</label
-                >
-                <select
-                  class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
-                >
-                  <option>Apenas visualização</option>
-                  <option>Visualização e edição</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Expiração do compartilhamento</label
-              >
-              <select
-                class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button p-2.5 focus:ring-primary focus:border-primary"
-              >
-                <option>7 dias</option>
-                <option>30 dias</option>
-                <option>90 dias</option>
-                <option>Sem expiração</option>
-              </select>
-            </div>
-            <div
-              class="flex items-center justify-between bg-blue-50 p-3 rounded-lg"
-            >
-              <div class="flex items-center">
-                <div
-                  class="w-10 h-10 flex items-center justify-center bg-blue-100 rounded-full"
-                >
-                  <i class="ri-link-m text-blue-600"></i>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-blue-900">
-                    Link de compartilhamento
-                  </p>
-                  <p class="text-xs text-blue-700">
-                    https://app.notas/share/abc123
-                  </p>
-                </div>
-              </div>
-              <button
-                class="bg-blue-100 text-blue-700 hover:bg-blue-200 !rounded-button px-3 py-1.5 text-sm font-medium whitespace-nowrap"
-              >
-                Copiar
-              </button>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button
-                id="whatsappShareButton"
-                class="bg-green-600 text-white hover:bg-green-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
-              >
-                <i class="ri-whatsapp-fill mr-1"></i> WhatsApp
-              </button>
-              <button
-                class="bg-blue-600 text-white hover:bg-blue-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
-              >
-                <i class="ri-mail-fill mr-1"></i> E-mail
-              </button>
-              <button
-                id="saveToFilesButton"
-                class="bg-gray-600 text-white hover:bg-gray-700 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center"
-              >
-                <i class="ri-folder-fill mr-1"></i> Arquivos
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
-          <button
-            id="cancelShare"
-            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Cancelar
-          </button>
-          <button
-            id="confirmShare"
-            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Compartilhar
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal de Exportação PDF -->
-    <div
-      id="exportPdfModal"
-      class="modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden"
-    >
-      <div
-        class="modal-container bg-white w-full max-w-md mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95"
-      >
-        <div
-          class="p-4 border-b border-gray-200 flex justify-between items-center"
-        >
-          <h3 class="text-lg font-medium text-gray-900">Exportar como PDF</h3>
-          <button id="closeExportPdf" class="text-gray-400 hover:text-gray-500">
-            <i class="ri-close-line ri-lg"></i>
-          </button>
-        </div>
-        <div class="p-4">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Período</label
-              >
-              <select
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              >
-                <option>Mês atual (Maio 2025)</option>
-                <option>Mês anterior (Abril 2025)</option>
-                <option>Últimos 3 meses</option>
-                <option>Personalizado</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Categorias</label
-              >
-              <select
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              >
-                <option>Todas as categorias</option>
-                <option>Alimentação</option>
-                <option>Transporte</option>
-                <option>Saúde</option>
-                <option>Compras</option>
-                <option>Moradia</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Formato do relatório</label
-              >
-              <select
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm !rounded-button block w-full p-2.5 focus:ring-primary focus:border-primary"
-              >
-                <option>Detalhado (todas as notas)</option>
-                <option>Resumido (apenas totais)</option>
-                <option>Completo (detalhes + gráficos)</option>
-              </select>
-            </div>
-            <div class="flex items-center">
-              <label class="custom-switch">
-                <input type="checkbox" checked />
-                <span class="switch-slider"></span>
-              </label>
-              <span class="ml-3 text-sm text-gray-700">Incluir gráficos</span>
-            </div>
-            <div class="flex items-center">
-              <label class="custom-switch">
-                <input type="checkbox" checked />
-                <span class="switch-slider"></span>
-              </label>
-              <span class="ml-3 text-sm text-gray-700"
-                >Incluir comparativo com mês anterior</span
-              >
-            </div>
-          </div>
-        </div>
-        <div class="p-4 border-t border-gray-200 flex justify-end space-x-2">
-          <button
-            id="cancelExportPdf"
-            class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Cancelar
-          </button>
-          <button
-            id="confirmExportPdf"
-            class="bg-primary text-white hover:bg-primary/90 !rounded-button px-4 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Exportar PDF
-          </button>
-        </div>
-      </div>
-    </div>
-    <script id="searchFilterScript">
-      document.addEventListener("DOMContentLoaded", function () {
-        const searchButton = document.getElementById("searchButton");
-        const searchBar = document.getElementById("searchBar");
-        const filterButton = document.getElementById("filterButton");
-        const filterBar = document.getElementById("filterBar");
-        const categoryCards = document.querySelectorAll("[data-category]");
-        const invoiceItems = document.querySelectorAll(".divide-y > div");
-        let selectedCategory = null;
-        categoryCards.forEach((card) => {
-          card.addEventListener("click", () => {
-            const category = card.dataset.category;
-            const categoryName = {
-              alimentacao: "Alimentação",
-              transporte: "Transporte",
-              saude: "Saúde",
-              compras: "Compras",
-              moradia: "Moradia",
-            }[category];
-            categoryCards.forEach((c) => {
-              c.classList.remove("ring-2", "ring-primary");
-            });
-            if (selectedCategory === category) {
-              selectedCategory = null;
-              invoiceItems.forEach((item) => {
-                item.style.display = "block";
-              });
-            } else {
-              selectedCategory = category;
-              card.classList.add("ring-2", "ring-primary");
-              invoiceItems.forEach((item) => {
-                const itemCategory = item.querySelector(
-                  ".text-xs.font-medium",
-                ).textContent;
-                if (itemCategory === categoryName) {
-                  item.style.display = "block";
-                } else {
-                  item.style.display = "none";
-                }
-              });
-            }
-          });
-        });
-        searchButton.addEventListener("click", function () {
-          searchBar.classList.toggle("hidden");
-          if (!searchBar.classList.contains("hidden")) {
-            filterBar.classList.add("hidden");
-          }
-        });
-        filterButton.addEventListener("click", function () {
-          filterBar.classList.toggle("hidden");
-          if (!filterBar.classList.contains("hidden")) {
-            searchBar.classList.add("hidden");
-          }
-        });
-      });
-    </script>
-    <script id="checkboxSelectionScript">
-      document.addEventListener("DOMContentLoaded", function () {
-        const checkboxes = document.querySelectorAll(".nota-checkbox");
-        const actionBar = document.getElementById("actionBar");
-        const cancelSelection = document.getElementById("cancelSelection");
-        function updateActionBar() {
-          const checkedBoxes = document.querySelectorAll(".nota-checkbox:checked");
-          if (checkedBoxes.length > 0) {
-            actionBar.classList.remove("hidden");
-          } else {
-            actionBar.classList.add("hidden");
-          }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        checkboxes.forEach((checkbox) => {
-          checkbox.addEventListener("change", updateActionBar);
-        });
-        cancelSelection.addEventListener("click", function () {
-          checkboxes.forEach((checkbox) => {
-            checkbox.checked = false;
-          });
-          updateActionBar();
-        });
-      });
-    </script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script id="modalScript">
-      document.addEventListener("DOMContentLoaded", function () {
-        const deleteConfirmModal = document.getElementById("deleteConfirmModal");
-        const cancelDelete = document.getElementById("cancelDelete");
-        const confirmDelete = document.getElementById("confirmDelete");
-        let currentDeleteTarget = null;
-        let scanner = null;
-        function initQRScanner() {
-          const scannerArea = document.getElementById("qr-reader");
-          if (!scannerArea) return;
 
-          scanner = new Html5Qrcode("qr-reader");
-          const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          };
-          scanner
-            .start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
-            .catch((err) => {
-              document.getElementById("cameraError").classList.remove("hidden");
-              console.error(err);
-            });
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-        function onScanSuccess(decodedText, decodedResult) {
-          document.getElementById("scanSuccess").classList.remove("hidden");
-          setTimeout(() => {
-            stopScanning();
-            closeModal(document.getElementById("scannerModal"));
-            setTimeout(() => {
-              const confirmDataModal = document.getElementById("confirmDataModal");
-              try {
-                const data = JSON.parse(decodedText);
-                fillConfirmationData(data);
-              } catch (e) {
-                fillConfirmationData({
-                  establishment: "Estabelecimento não identificado",
-                  amount: "0,00",
-                  nfeNumber: decodedText,
-                });
-              }
-              openModal(confirmDataModal);
-            }, 300);
-          }, 1000);
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
-        function onScanError(error) {
-          // Silently handle scan errors
-          console.log(error);
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
         }
-        function stopScanning() {
-          if (scanner) {
-            scanner
-              .stop()
-              .then(() => {
-                scanner = null;
-              })
-              .catch((err) => {
-                console.error(err);
-              });
-          }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 300;
         }
-        function handleScanSuccess(qrData) {
-          try {
-            const data = JSON.parse(qrData);
-            document.getElementById("scanSuccess").classList.remove("hidden");
-            setTimeout(() => {
-              stopScanning();
-              closeModal(document.getElementById("scannerModal"));
-              setTimeout(() => {
-                const confirmDataModal = document.getElementById("confirmDataModal");
-                fillConfirmationData(data);
-                openModal(confirmDataModal);
-              }, 300);
-            }, 1000);
-          } catch (error) {
-            console.error("Invalid QR code data:", error);
-          }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
         }
-        function fillConfirmationData(data) {
-          const inputs = document
-            .getElementById("confirmDataModal")
-            .getElementsByTagName("input");
-          const dateStr = new Date().toLocaleString("pt-BR");
-          for (let input of inputs) {
-            if (input.value.includes("R$")) {
-              input.value = data.amount
-                ? `R$ ${parseFloat(data.amount).toFixed(2)}`
-                : "";
-            } else if (input.value.includes("/")) {
-              input.value = dateStr;
-            } else if (input.value.length === 9) {
-              input.value = data.nfeNumber || "";
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            background: white;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .appointments-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .appointment-date {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .appointment-time {
+            background: #3498db;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .appointment-details {
+            color: #7f8c8d;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .appointment-actions .btn {
+            padding: 8px 16px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* Configuração de Horários */
+        .schedule-config {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .weekdays-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .weekdays-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .weekday-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #ecf0f1;
+        }
+
+        .weekday-item:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .weekday-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .date-schedule {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .date-info {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .date-info.available {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .date-info.unavailable {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .time-period {
+            margin-bottom: 25px;
+        }
+
+        .time-period h4 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 10px 8px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .time-slot:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .time-slot.selected {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+            transform: scale(1.02);
+        }
+
+        .time-slot.booked {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .schedule-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .schedule-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .time-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .time-group.available {
+            background: #e8f5e8;
+            color: #2d5a2d;
+        }
+
+        .time-group.booked {
+            background: #ffebee;
+            color: #8b1e1e;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-config {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .appointment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Painel Administrativo</h1>
+            <p>Gerenciamento de Visitas Pastorais</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="showSection('appointments')">📅 Agendamentos</button>
+            <button class="nav-tab" onclick="showSection('schedule')">⏰ Configurar Horários</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAppointments">0</div>
+                        <div class="stat-label">Total de Agendamentos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayAppointments">0</div>
+                        <div class="stat-label">Agendamentos Hoje</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="weekAppointments">0</div>
+                        <div class="stat-label">Esta Semana</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="nextAppointment">--</div>
+                        <div class="stat-label">Próxima Visita</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">📋 Próximos Agendamentos</h3>
+                <div id="upcomingAppointments"></div>
+            </div>
+
+            <!-- Lista de Agendamentos -->
+            <div id="appointments" class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #2c3e50;">📅 Todos os Agendamentos</h2>
+                    <button class="btn btn-danger" onclick="clearAllAppointments()">🗑️ Limpar Todos</button>
+                </div>
+                <div id="appointmentsList" class="appointments-list">
+                    <!-- Agendamentos serão carregados aqui -->
+                </div>
+            </div>
+
+            <!-- Configuração de Horários -->
+            <div id="schedule" class="section">
+                <h2 style="margin-bottom: 20px; color: #2c3e50;">⏰ Configurar Disponibilidade</h2>
+                
+                <!-- Configuração dos Dias da Semana -->
+                <div class="weekdays-config">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">📅 Dias da Semana Disponíveis</h3>
+                    <p style="color: #7f8c8d; margin-bottom: 15px;">Selecione os dias da semana em que você estará disponível para visitas pastorais:</p>
+                    <div class="weekdays-grid">
+                        <label class="weekday-item">
+                            <input type="checkbox" id="dayMonday" value="1" onchange="saveWeeklySchedule()">
+                            <span>Segunda-feira</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="dayTuesday" value="2" onchange="saveWeeklySchedule()">
+                            <span>Terça-feira</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="dayWednesday" value="3" onchange="saveWeeklySchedule()">
+                            <span>Quarta-feira</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="dayThursday" value="4" onchange="saveWeeklySchedule()">
+                            <span>Quinta-feira</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="dayFriday" value="5" onchange="saveWeeklySchedule()">
+                            <span>Sexta-feira</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="daySaturday" value="6" onchange="saveWeeklySchedule()">
+                            <span>Sábado</span>
+                        </label>
+                        <label class="weekday-item">
+                            <input type="checkbox" id="daySunday" value="0" onchange="saveWeeklySchedule()">
+                            <span>Domingo</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Configuração de Horários por Data -->
+                <div class="schedule-config">
+                    <div class="date-schedule">
+                        <div class="form-group">
+                            <label for="scheduleDate">📅 Selecionar Data Específica:</label>
+                            <input type="date" id="scheduleDate" onchange="loadScheduleForDate()">
+                        </div>
+                        
+                        <div id="dateInfo" class="date-info" style="display: none;">
+                            <!-- Informações sobre a data selecionada -->
+                        </div>
+                        
+                        <div id="timeSlotContainer" style="display: none;">
+                            <div class="time-period">
+                                <h4>🌅 Horários da Tarde (12:00 - 18:00)</h4>
+                                <div class="time-slots" id="afternoonTimeSlots">
+                                    <!-- Horários da tarde -->
+                                </div>
+                            </div>
+                            
+                            <div class="time-period">
+                                <h4>🌙 Horários da Noite (18:30 - 22:00)</h4>
+                                <div class="time-slots" id="eveningTimeSlots">
+                                    <!-- Horários da noite -->
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 20px;">
+                                <button class="btn btn-success" onclick="saveSchedule()">💾 Salvar Horários</button>
+                                <button class="btn" onclick="selectAllTimes()">✅ Selecionar Todos</button>
+                                <button class="btn" onclick="clearAllTimes()">❌ Limpar Todos</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-preview">
+                        <h4>📋 Preview da Disponibilidade</h4>
+                        <div id="schedulePreview">
+                            <p style="color: #7f8c8d; font-style: italic;">Configure os dias da semana e selecione uma data para definir os horários específicos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados em memória - usar localStorage para persistência
+        let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        let availableSchedule = JSON.parse(localStorage.getItem('availableSchedule') || '{}');
+        let weeklyAvailability = JSON.parse(localStorage.getItem('weeklyAvailability') || '[]');
+        let selectedTimes = [];
+
+        // Horários expandidos (tarde e noite)
+        const afternoonTimes = [
+            '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', 
+            '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+        ];
+        
+        const eveningTimes = [
+            '18:30', '19:00', '19:30', '20:00', '20:30', 
+            '21:00', '21:30', '22:00'
+        ];
+        
+        const allAvailableTimes = [...afternoonTimes, ...eveningTimes];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            loadAppointments();
+            initializeSchedule();
+        });
+
+        function showSection(sectionName) {
+            // Esconder todas as seções
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Mostrar seção selecionada
+            document.getElementById(sectionName).classList.add('active');
+            
+            // Atualizar botões de navegação
+            const buttons = document.querySelectorAll('.nav-tab');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Recarregar dados se necessário
+            if (sectionName === 'dashboard') {
+                loadDashboard();
+            } else if (sectionName === 'appointments') {
+                loadAppointments();
+            }
+        }
+
+        function loadDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const startOfWeek = getStartOfWeek(new Date());
+            const endOfWeek = getEndOfWeek(new Date());
+
+            // Estatísticas
+            document.getElementById('totalAppointments').textContent = appointments.length;
+            
+            const todayCount = appointments.filter(apt => apt.date === today).length;
+            document.getElementById('todayAppointments').textContent = todayCount;
+            
+            const weekCount = appointments.filter(apt => {
+                const aptDate = new Date(apt.date);
+                return aptDate >= startOfWeek && aptDate <= endOfWeek;
+            }).length;
+            document.getElementById('weekAppointments').textContent = weekCount;
+
+            // Próxima visita
+            const upcoming = appointments
+                .filter(apt => new Date(apt.date + ' ' + apt.time) >= new Date())
+                .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+            
+            if (upcoming.length > 0) {
+                const next = upcoming[0];
+                document.getElementById('nextAppointment').textContent = 
+                    new Date(next.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + 
+                    ' ' + next.time;
+            }
+
+            // Próximos agendamentos
+            const upcomingContainer = document.getElementById('upcomingAppointments');
+            if (upcoming.length === 0) {
+                upcomingContainer.innerHTML = '<div class="empty-state">📅 Nenhum agendamento próximo</div>';
             } else {
-              input.value = data.establishment || "";
+                upcomingContainer.innerHTML = upcoming.slice(0, 5).map(apt => `
+                    <div class="appointment-card">
+                        <div class="appointment-header">
+                            <div class="appointment-date">
+                                ${new Date(apt.date).toLocaleDateString('pt-BR', {
+                                    weekday: 'short',
+                                    day: '2-digit',
+                                    month: '2-digit'
+                                })}
+                            </div>
+                            <div class="appointment-time">${apt.time}</div>
+                        </div>
+                        <div class="appointment-details">
+                            <strong>👤 ${apt.name}</strong><br>
+                            📱 ${apt.phone}<br>
+                            📍 ${apt.address}
+                        </div>
+                    </div>
+                `).join('');
             }
-          }
         }
-        function stopScanning() {
-          if (codeReader) {
-            codeReader.reset();
-            scannerActive = false;
-          }
-        }
-        function processScanResult(result) {
-          try {
-            const data = JSON.parse(result);
-            document
-              .getElementById("confirmDataModal")
-              .querySelector('input[value="Supermercado Extra"]').value =
-              data.establishment || "";
-            document
-              .getElementById("confirmDataModal")
-              .querySelector('input[value="R$ 253,75"]').value = data.amount
-              ? `R$ ${data.amount}`
-              : "";
-            document
-              .getElementById("confirmDataModal")
-              .querySelector('input[value="31/05/2025 15:42"]').value =
-              data.date || "";
-            document
-              .getElementById("confirmDataModal")
-              .querySelector('input[value="123456789"]').value = data.nfeNumber || "";
-            const successOverlay = document.createElement("div");
-            successOverlay.className =
-              "absolute inset-0 bg-green-500 bg-opacity-20 flex items-center justify-center z-20";
-            successOverlay.innerHTML = `
-      <div class="bg-white rounded-full p-3">
-      <i class="ri-check-line ri-2x text-green-500"></i>
-      </div>
-      `;
-            document.getElementById("qr-reader").appendChild(successOverlay);
-            setTimeout(() => {
-              closeModal(document.getElementById("scannerModal"));
-              setTimeout(() => {
-                openModal(document.getElementById("confirmDataModal"));
-                successOverlay.remove();
-              }, 300);
-            }, 1000);
-          } catch (error) {
-            console.error("Error processing scan result:", error);
-          }
-        }
-        document.querySelectorAll(".ri-delete-bin-line").forEach((button) => {
-          button.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            currentDeleteTarget = this.closest(".py-4");
-            openModal(deleteConfirmModal);
-          });
-        });
-        cancelDelete.addEventListener("click", function () {
-          closeModal(deleteConfirmModal);
-          currentDeleteTarget = null;
-        });
-        confirmDelete.addEventListener("click", function () {
-          if (currentDeleteTarget) {
-            currentDeleteTarget.remove();
-          }
-          closeModal(deleteConfirmModal);
-          currentDeleteTarget = null;
-        });
-        const scannerButton = document.getElementById("scannerButton");
-        const scannerModal = document.getElementById("scannerModal");
-        const closeScanner = document.getElementById("closeScanner");
-        const confirmDataModal = document.getElementById("confirmDataModal");
-        const closeConfirmData = document.getElementById("closeConfirmData");
-        const cancelConfirmData = document.getElementById("cancelConfirmData");
-        const saveConfirmData = document.getElementById("saveConfirmData");
-        const exportPdfModal = document.getElementById("exportPdfModal");
-        const closeExportPdf = document.getElementById("closeExportPdf");
-        const cancelExportPdf = document.getElementById("cancelExportPdf");
-        const confirmExportPdf = document.getElementById("confirmExportPdf");
-        const cameraFeed = document.getElementById("cameraFeed");
-        const cameraError = document.getElementById("cameraError");
-        let html5QrcodeScanner = null;
-        let isScanning = false;
-        const constraints = {
-          video: {
-            facingMode: "environment",
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 },
-          },
-        };
-        // Funções para abrir e fechar modais
-        function openModal(modal) {
-          modal.classList.remove("hidden");
-          setTimeout(() => {
-            modal.querySelector(".modal-container").classList.remove("scale-95");
-            modal.querySelector(".modal-container").classList.add("scale-100");
-          }, 10);
-        }
-        function closeModal(modal) {
-          modal.querySelector(".modal-container").classList.remove("scale-100");
-          modal.querySelector(".modal-container").classList.add("scale-95");
-          setTimeout(() => {
-            modal.classList.add("hidden");
-          }, 300);
-        }
-        // Scanner Modal
-        scannerButton.addEventListener("click", function () {
-          if (scannerActive) return;
-          const scannerModal = document.getElementById("scannerModal");
-          openModal(scannerModal);
-          initQRScanner();
-        });
-        document
-          .getElementById("closeScanner")
-          .addEventListener("click", function () {
-            stopScanning();
-            closeModal(document.getElementById("scannerModal"));
-          });
-        document.getElementById("retryCamera").addEventListener("click", function () {
-          document.getElementById("cameraError").classList.add("hidden");
-          initQRScanner();
-        });
-        document
-          .getElementById("switchCamera")
-          .addEventListener("click", function () {
-            stopScanning();
-            initQRScanner();
-          });
-        scannerButton.addEventListener("click", function () {
-          const scannerModal = document.getElementById("scannerModal");
-          openModal(scannerModal);
-          initQRScanner();
-        });
-        document
-          .getElementById("closeScanner")
-          .addEventListener("click", function () {
-            stopScanning();
-            closeModal(document.getElementById("scannerModal"));
-          });
-        document.getElementById("retryCamera").addEventListener("click", function () {
-          document.getElementById("cameraError").classList.add("hidden");
-          initQRScanner();
-        });
-        document
-          .getElementById("switchCamera")
-          .addEventListener("click", function () {
-            stopScanning();
-            initQRScanner();
-          });
-        closeScanner.addEventListener("click", function () {
-          if (html5QrcodeScanner && isScanning) {
-            html5QrcodeScanner
-              .stop()
-              .then(() => {
-                isScanning = false;
-                closeModal(scannerModal);
-              })
-              .catch(() => {
-                isScanning = false;
-                closeModal(scannerModal);
-              });
-          } else {
-            closeModal(scannerModal);
-          }
-        });
-        // Confirm Data Modal
-        closeConfirmData.addEventListener("click", function () {
-          closeModal(confirmDataModal);
-        });
-        cancelConfirmData.addEventListener("click", function () {
-          closeModal(confirmDataModal);
-        });
-        saveConfirmData.addEventListener("click", function () {
-          closeModal(confirmDataModal);
-          // Aqui você adicionaria o código para salvar os dados
-        });
-        // Export PDF Modal
-        const shareModal = document.getElementById("shareModal");
-        const closeShare = document.getElementById("closeShare");
-        const cancelShare = document.getElementById("cancelShare");
-        const confirmShare = document.getElementById("confirmShare");
-        document.querySelectorAll(".ri-share-line").forEach((button) => {
-          button.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            openModal(shareModal);
-          });
-        });
-        closeShare.addEventListener("click", function () {
-          closeModal(shareModal);
-        });
-        cancelShare.addEventListener("click", function () {
-          closeModal(shareModal);
-        });
-        const whatsappShareButton = document.getElementById("whatsappShareButton");
-        const saveToFilesButton = document.getElementById("saveToFilesButton");
-        saveToFilesButton.addEventListener("click", function () {
-          const formatSelect = document
-            .getElementById("shareModal")
-            .querySelector("select");
-          const selectedFormat = formatSelect.value;
-          if (selectedFormat === "Link compartilhável") {
-            const formatDialog = document.createElement("div");
-            formatDialog.className =
-              "fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center";
-            formatDialog.innerHTML = `
-      <div class="bg-white w-full max-w-xs mx-auto rounded-lg shadow-lg overflow-hidden transform scale-95 transition-transform duration-200">
-      <div class="p-4 border-b border-gray-200">
-      <h3 class="text-lg font-medium text-gray-900">Selecione o formato</h3>
-      </div>
-      <div class="p-4 space-y-3">
-      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="PDF">
-      <i class="ri-file-pdf-line mr-2"></i> PDF
-      </button>
-      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="Excel">
-      <i class="ri-file-excel-line mr-2"></i> Excel
-      </button>
-      <button class="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 !rounded-button py-2 text-sm font-medium whitespace-nowrap flex items-center justify-center" data-format="CSV">
-      <i class="ri-file-text-line mr-2"></i> CSV
-      </button>
-      </div>
-      </div>`;
-            document.body.appendChild(formatDialog);
-            formatDialog.querySelectorAll("button").forEach((button) => {
-              button.addEventListener("click", function () {
-                const format = this.dataset.format;
-                generateAndDownloadFile(format);
-                document.body.removeChild(formatDialog);
-              });
-            });
-            formatDialog.addEventListener("click", function (e) {
-              if (e.target === formatDialog) {
-                document.body.removeChild(formatDialog);
-              }
-            });
-          } else {
-            generateAndDownloadFile(selectedFormat);
-          }
-        });
-        function generateAndDownloadFile(format) {
-          let fileName = `notas_fiscais_${new Date().toISOString().slice(0, 10)}`;
-          let fileExtension = "";
-          let mimeType = "";
-          switch (format) {
-            case "PDF":
-              fileExtension = ".pdf";
-              mimeType = "application/pdf";
-              break;
-            case "Excel":
-              fileExtension = ".xlsx";
-              mimeType =
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-              break;
-            case "CSV":
-              fileExtension = ".csv";
-              mimeType = "text/csv";
-              break;
-            default:
-              fileExtension = ".txt";
-              mimeType = "text/plain";
-          }
-          const link = document.createElement("a");
-          link.download = fileName + fileExtension;
-          link.href = "#"; // Here you would set the actual file URL
-          link.click();
-          const notification = document.createElement("div");
-          notification.className =
-            "fixed bottom-4 right-4 bg-green-50 text-green-800 px-4 py-3 rounded-lg shadow-lg z-50 flex items-center transform transition-transform duration-300 translate-y-0";
-          notification.innerHTML = `
-      <div class="w-8 h-8 flex items-center justify-center bg-green-100 rounded-full mr-3">
-      <i class="ri-check-line text-green-600"></i>
-      </div>
-      <div>
-      <p class="font-medium">Arquivo gerado com sucesso</p>
-      <p class="text-sm text-green-600">O download começará automaticamente</p>
-      </div>`;
-          document.body.appendChild(notification);
-          setTimeout(() => {
-            notification.style.transform = "translateY(150%)";
-            setTimeout(() => document.body.removeChild(notification), 300);
-          }, 3000);
-        }
-        whatsappShareButton.addEventListener("click", function () {
-          const recipientsInput = document.querySelector(
-            '#shareModal input[type="text"]',
-          );
-          const messageInput = document.querySelector("#shareModal textarea");
-          const formatSelect = document.querySelector(
-            "#shareModal select:nth-of-type(1)",
-          );
-          let recipients = recipientsInput.value
-            .split(",")
-            .map((r) => r.trim())
-            .filter((r) => r);
-          let message = messageInput.value || "Compartilhando notas fiscais";
-          let format = formatSelect.value;
-          let whatsappText = `${message}\n\nLink: https://app.notas/share/abc123`;
-          let whatsappUrl = "";
-          if (recipients.length > 0) {
-            let firstRecipient = recipients[0].replace(/\D/g, "");
-            if (firstRecipient) {
-              whatsappUrl = `https://wa.me/${firstRecipient}?text=${encodeURIComponent(whatsappText)}`;
+
+        function loadAppointments() {
+            const container = document.getElementById('appointmentsList');
+            
+            if (appointments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📅</div>
+                        <h3>Nenhum agendamento encontrado</h3>
+                        <p>Os agendamentos aparecerão aqui quando forem realizados.</p>
+                    </div>
+                `;
+                return;
             }
-          } else {
-            whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-          }
-          window.open(whatsappUrl, "_blank");
-        });
-        confirmShare.addEventListener("click", function () {
-          closeModal(shareModal);
-        });
-        closeExportPdf.addEventListener("click", function () {
-          closeModal(exportPdfModal);
-        });
-        cancelExportPdf.addEventListener("click", function () {
-          closeModal(exportPdfModal);
-        });
-        confirmExportPdf.addEventListener("click", function () {
-          closeModal(exportPdfModal);
-          // Aqui você adicionaria o código para exportar o PDF
-        });
-      });
-    </script>
-  </body>
-</html>
+            
+            // Ordenar por data e horário
+            const sortedAppointments = appointments.sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + a.time);
+                const dateB = new Date(b.date + ' ' + b.time);
+                return dateA - dateB;
+            });
+            
+            container.innerHTML = sortedAppointments.map(apt => `
+                <div class="appointment-card">
+                    <div class="appointment-header">
+                        <div class="appointment-date">
+                            ${new Date(apt.date).toLocaleDateString('pt-BR', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
+                        </div>
+                        <div class="appointment-time">${apt.time}</div>
+                    </div>
+                    <div class="appointment-details">
+                        <strong>👤 ${apt.name}</strong><br>
+                        📱 ${apt.phone}<br>
+                        📍 ${apt.address}<br>
+                        ${apt.reason ? `💭 ${apt.reason}<br>` : ''}
+                        <small>Agendado em: ${apt.createdAt}</small>
+                    </div>
+                    <div class="appointment-actions">
+                        <button class="btn btn-danger" onclick="deleteAppointment(${apt.id})">🗑️ Excluir</button>
+                        <a href="https://wa.me/55${apt.phone.replace(/\D/g, '')}" target="_blank" class="btn btn-success">💬 WhatsApp</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteAppointment(id) {
+            if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+                appointments = appointments.filter(apt => apt.id !== id);
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                loadAppointments();
+                loadDashboard();
+            }
+        }
+
+        function clearAllAppointments() {
+            if (confirm('Tem certeza que deseja excluir TODOS os agendamentos? Esta ação não pode ser desfeita.')) {
+                appointments = [];
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                loadAppointments();
+                loadDashboard();
+            }
+        }
+
+        function initializeSchedule() {
+            // Definir data mínima como hoje
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('scheduleDate').min = today;
+            
+            // Definir data máxima (6 meses à frente)
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 6);
+            document.getElementById('scheduleDate').max = maxDate.toISOString().split('T')[0];
+            
+            // Carregar configuração dos dias da semana
+            loadWeeklyAvailability();
+            
+            // Carregar horários disponíveis
+            loadAvailableTimeSlots();
+        }
+
+        function loadWeeklyAvailability() {
+            // Marcar os dias da semana disponíveis
+            weeklyAvailability.forEach(day => {
+                const dayMap = {
+                    1: 'dayMonday', 2: 'dayTuesday', 3: 'dayWednesday', 
+                    4: 'dayThursday', 5: 'dayFriday', 6: 'daySaturday', 0: 'daySunday'
+                };
+                const checkbox = document.getElementById(dayMap[day]);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+
+        function saveWeeklySchedule() {
+            const days = [];
+            const dayCheckboxes = [
+                { id: 'dayMonday', value: 1 },
+                { id: 'dayTuesday', value: 2 },
+                { id: 'dayWednesday', value: 3 },
+                { id: 'dayThursday', value: 4 },
+                { id: 'dayFriday', value: 5 },
+                { id: 'daySaturday', value: 6 },
+                { id: 'daySunday', value: 0 }
+            ];
+            
+            dayCheckboxes.forEach(day => {
+                if (document.getElementById(day.id).checked) {
+                    days.push(day.value);
+                }
+            });
+            
+            weeklyAvailability = days;
+            localStorage.setItem('weeklyAvailability', JSON.stringify(weeklyAvailability));
+            
+            // Se uma data estiver selecionada, recarregar as informações
+            const selectedDate = document.getElementById('scheduleDate').value;
+            if (selectedDate) {
+                loadScheduleForDate();
+            }
+        }
+
+        function loadAvailableTimeSlots() {
+            // Carregar horários da tarde
+            const afternoonContainer = document.getElementById('afternoonTimeSlots');
+            if (afternoonContainer) {
+                afternoonContainer.innerHTML = '';
+                afternoonTimes.forEach(time => {
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    slot.textContent = time;
+                    slot.dataset.time = time;
+                    slot.onclick = () => toggleTimeSlot(time, slot);
+                    afternoonContainer.appendChild(slot);
+                });
+            }
+            
+            // Carregar horários da noite
+            const eveningContainer = document.getElementById('eveningTimeSlots');
+            if (eveningContainer) {
+                eveningContainer.innerHTML = '';
+                eveningTimes.forEach(time => {
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    slot.textContent = time;
+                    slot.dataset.time = time;
+                    slot.onclick = () => toggleTimeSlot(time, slot);
+                    eveningContainer.appendChild(slot);
+                });
+            }
+        }
+
+        function toggleTimeSlot(time, element) {
+            if (selectedTimes.includes(time)) {
+                selectedTimes = selectedTimes.filter(t => t !== time);
+                element.classList.remove('selected');
+            } else {
+                selectedTimes.push(time);
+                element.classList.add('selected');
+            }
+        }
+
+        function selectAllTimes() {
+            selectedTimes = [...allAvailableTimes];
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.add('selected');
+            });
+        }
+
+        function clearAllTimes() {
+            selectedTimes = [];
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+        }
+
+        function loadScheduleForDate() {
+            const selectedDate = document.getElementById('scheduleDate').value;
+            if (!selectedDate) {
+                document.getElementById('timeSlotContainer').style.display = 'none';
+                document.getElementById('dateInfo').style.display = 'none';
+                return;
+            }
+
+            const dateObj = new Date(selectedDate);
+            const dayOfWeek = dateObj.get
